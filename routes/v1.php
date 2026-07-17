@@ -1,16 +1,17 @@
 <?php
 
 use App\Http\Controllers\V1\AuthController;
+use App\Http\Controllers\V1\BranchController;
+use App\Http\Controllers\V1\CountryController;
+use App\Http\Controllers\V1\DepartmentController;
+use App\Http\Controllers\V1\DesignationController;
+use App\Http\Controllers\V1\DistrictController;
+use App\Http\Controllers\V1\GroupController;
 use App\Http\Controllers\V1\PermissionController;
+use App\Http\Controllers\V1\ProvinceController;
 use App\Http\Controllers\V1\RoleController;
 use App\Http\Controllers\V1\UserController;
-use App\Http\Controllers\V1\DepartmentController;
-use App\Http\Controllers\V1\ProvinceController;
-use App\Http\Controllers\V1\DistrictController;
-use App\Http\Controllers\V1\BranchController;
-use App\Http\Controllers\V1\DesignationController;
-use App\Http\Controllers\V1\CountryController;
-use App\Http\Controllers\V1\GroupController;
+use App\Http\Controllers\V1\ItemTypeController;
 use Illuminate\Support\Facades\Route;
 
 /* public routes */
@@ -35,51 +36,58 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
     Route::apiResource('users', UserController::class);
 
     // Countries
-    Route::apiResource('countries', CountryController::class);
     Route::prefix('countries')->group(function () {
         Route::patch('{id}/toggle-status', [CountryController::class, 'toggleStatus']);
         Route::get('list', [CountryController::class, 'getActiveList']);
     });
+    Route::apiResource('countries', CountryController::class);
 
     // Provinces
-    Route::apiResource('provinces', ProvinceController::class);
     Route::prefix('provinces')->group(function () {
         Route::patch('{id}/toggle-status', [ProvinceController::class, 'toggleStatus']);
         Route::get('list', [ProvinceController::class, 'getProvinceList']);
     });
+    Route::apiResource('provinces', ProvinceController::class);
 
     // Districts
-    Route::apiResource('districts', DistrictController::class);
     Route::prefix('districts')->group(function () {
         Route::patch('{id}/toggle-status', [DistrictController::class, 'toggleStatus']);
         Route::get('list', [DistrictController::class, 'getDistrictList']);
     });
+    Route::apiResource('districts', DistrictController::class);
 
     // Branches
-    Route::apiResource('branches', BranchController::class);
     Route::prefix('branches')->group(function () {
         Route::patch('{id}/toggle-status', [BranchController::class, 'toggleStatus']);
         Route::get('list', [BranchController::class, 'getBranchList']);
     });
+    Route::apiResource('branches', BranchController::class);
 
     // Departments
-    Route::apiResource('departments', DepartmentController::class);
     Route::prefix('departments')->group(function () {
         Route::get('{id}/designations', [DepartmentController::class, 'getDesignations']);
         Route::patch('{id}/toggle-status', [DepartmentController::class, 'toggleStatus']);
     });
+    Route::apiResource('departments', DepartmentController::class);
 
     // Designations
-    Route::apiResource('designations', DesignationController::class);
     Route::prefix('designations')->group(function () {
         Route::get('list', [DesignationController::class, 'getActiveList']);
         Route::patch('{id}/toggle-status', [DesignationController::class, 'toggleStatus']);
     });
+    Route::apiResource('designations', DesignationController::class);
 
     // Groups
-    Route::apiResource('groups', GroupController::class);
     Route::prefix('groups')->group(function () {
         Route::get('list', [GroupController::class, 'getActiveList']);
         Route::patch('{id}/toggle-status', [GroupController::class, 'toggleStatus']);
     });
+    Route::apiResource('groups', GroupController::class);
+
+    // Item Types
+    Route::prefix('item-types')->group(function () {
+        Route::get('list', [ItemTypeController::class, 'getActiveList']);
+        Route::patch('{id}/toggle-status', [ItemTypeController::class, 'toggleStatus']);
+    });
+    Route::apiResource('item-types', ItemTypeController::class);
 });

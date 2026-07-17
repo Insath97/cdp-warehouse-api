@@ -81,6 +81,13 @@ class PermissionsSeeder extends Seeder
             ['name' => 'Group Update', 'group_name' => 'Group Management Permissions'],
             ['name' => 'Group Delete', 'group_name' => 'Group Management Permissions'],
             ['name' => 'Group Toggle Status', 'group_name' => 'Group Management Permissions'],
+
+            /* Item Type Management */
+            ['name' => 'ItemType Index', 'group_name' => 'Item Type Management Permissions'],
+            ['name' => 'ItemType Create', 'group_name' => 'Item Type Management Permissions'],
+            ['name' => 'ItemType Update', 'group_name' => 'Item Type Management Permissions'],
+            ['name' => 'ItemType Delete', 'group_name' => 'Item Type Management Permissions'],
+            ['name' => 'ItemType Toggle Status', 'group_name' => 'Item Type Management Permissions'],
         ];
 
         foreach ($permissions as $permission) {

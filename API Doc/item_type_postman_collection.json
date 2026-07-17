@@ -1,0 +1,185 @@
+{
+  "info": {
+    "_postman_id": "8f8dae84-18f1-4b14-874e-86872a0890bf",
+    "name": "Item Type",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get All",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/item-types",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "item-types"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get By Id",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/item-types/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "item-types",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/item-types/list",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "item-types",
+            "list"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Raw Materials\",\n  \"code\": \"RAW-MAT\",\n  \"description\": \"Raw production materials\",\n  \"is_active\": true\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/item-types",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "item-types"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Raw Materials Updated\",\n  \"code\": \"RAW-MAT-UPD\",\n  \"description\": \"Updated raw materials description\",\n  \"is_active\": true\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/item-types/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "item-types",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Toggle Status",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/item-types/1/toggle-status",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "item-types",
+            "1",
+            "toggle-status"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/item-types/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "item-types",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
