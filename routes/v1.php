@@ -13,6 +13,7 @@ use App\Http\Controllers\V1\RoleController;
 use App\Http\Controllers\V1\UserController;
 use App\Http\Controllers\V1\ItemTypeController;
 use App\Http\Controllers\V1\BankController;
+use App\Http\Controllers\V1\VehicleController;
 use Illuminate\Support\Facades\Route;
 
 /* public routes */
@@ -98,4 +99,11 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
         Route::patch('{id}/toggle-status', [BankController::class, 'toggleStatus']);
     });
     Route::apiResource('banks', BankController::class);
+
+    // Vehicles
+    Route::prefix('vehicles')->group(function () {
+        Route::get('list', [VehicleController::class, 'getActiveList']);
+        Route::patch('{id}/toggle-status', [VehicleController::class, 'toggleStatus']);
+    });
+    Route::apiResource('vehicles', VehicleController::class);
 });

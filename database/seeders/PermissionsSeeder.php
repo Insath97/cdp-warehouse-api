@@ -95,6 +95,13 @@ class PermissionsSeeder extends Seeder
             ['name' => 'Bank Update', 'group_name' => 'Bank Management Permissions'],
             ['name' => 'Bank Delete', 'group_name' => 'Bank Management Permissions'],
             ['name' => 'Bank Toggle Status', 'group_name' => 'Bank Management Permissions'],
+
+            /* Vehicle Management */
+            ['name' => 'Vehicle Index', 'group_name' => 'Vehicle Management Permissions'],
+            ['name' => 'Vehicle Create', 'group_name' => 'Vehicle Management Permissions'],
+            ['name' => 'Vehicle Update', 'group_name' => 'Vehicle Management Permissions'],
+            ['name' => 'Vehicle Delete', 'group_name' => 'Vehicle Management Permissions'],
+            ['name' => 'Vehicle Toggle Status', 'group_name' => 'Vehicle Management Permissions'],
         ];
 
         foreach ($permissions as $permission) {
