@@ -88,6 +88,13 @@ class PermissionsSeeder extends Seeder
             ['name' => 'ItemType Update', 'group_name' => 'Item Type Management Permissions'],
             ['name' => 'ItemType Delete', 'group_name' => 'Item Type Management Permissions'],
             ['name' => 'ItemType Toggle Status', 'group_name' => 'Item Type Management Permissions'],
+
+            /* Bank Management */
+            ['name' => 'Bank Index', 'group_name' => 'Bank Management Permissions'],
+            ['name' => 'Bank Create', 'group_name' => 'Bank Management Permissions'],
+            ['name' => 'Bank Update', 'group_name' => 'Bank Management Permissions'],
+            ['name' => 'Bank Delete', 'group_name' => 'Bank Management Permissions'],
+            ['name' => 'Bank Toggle Status', 'group_name' => 'Bank Management Permissions'],
         ];
 
         foreach ($permissions as $permission) {

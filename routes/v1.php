@@ -12,6 +12,7 @@ use App\Http\Controllers\V1\ProvinceController;
 use App\Http\Controllers\V1\RoleController;
 use App\Http\Controllers\V1\UserController;
 use App\Http\Controllers\V1\ItemTypeController;
+use App\Http\Controllers\V1\BankController;
 use Illuminate\Support\Facades\Route;
 
 /* public routes */
@@ -90,4 +91,11 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
         Route::patch('{id}/toggle-status', [ItemTypeController::class, 'toggleStatus']);
     });
     Route::apiResource('item-types', ItemTypeController::class);
+
+    // Banks
+    Route::prefix('banks')->group(function () {
+        Route::get('list', [BankController::class, 'getActiveList']);
+        Route::patch('{id}/toggle-status', [BankController::class, 'toggleStatus']);
+    });
+    Route::apiResource('banks', BankController::class);
 });

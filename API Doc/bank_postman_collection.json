@@ -1,0 +1,185 @@
+{
+  "info": {
+    "_postman_id": "7d9ab825-927b-4029-a128-43d93ab498be",
+    "name": "Bank",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get All",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/banks",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "banks"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get By Id",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/banks/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "banks",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/banks/list",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "banks",
+            "list"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Bank of Ceylon\",\n  \"code\": \"BOC\",\n  \"description\": \"State bank of Sri Lanka\",\n  \"is_active\": true\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/banks",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "banks"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Bank of Ceylon Updated\",\n  \"code\": \"BOC-UPD\",\n  \"description\": \"Updated Bank of Ceylon description\",\n  \"is_active\": true\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/banks/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "banks",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Toggle Status",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/banks/1/toggle-status",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "banks",
+            "1",
+            "toggle-status"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/banks/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "banks",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
