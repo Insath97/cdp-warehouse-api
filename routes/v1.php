@@ -12,8 +12,10 @@ use App\Http\Controllers\V1\ProvinceController;
 use App\Http\Controllers\V1\RoleController;
 use App\Http\Controllers\V1\UserController;
 use App\Http\Controllers\V1\ItemTypeController;
+use App\Http\Controllers\V1\ItemVarietyController;
 use App\Http\Controllers\V1\BankController;
 use App\Http\Controllers\V1\VehicleController;
+use App\Http\Controllers\V1\SupplierController;
 use Illuminate\Support\Facades\Route;
 
 /* public routes */
@@ -93,6 +95,13 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
     });
     Route::apiResource('item-types', ItemTypeController::class);
 
+    // Item Varieties
+    Route::prefix('item-varieties')->group(function () {
+        Route::get('list', [ItemVarietyController::class, 'getActiveList']);
+        Route::patch('{id}/toggle-status', [ItemVarietyController::class, 'toggleStatus']);
+    });
+    Route::apiResource('item-varieties', ItemVarietyController::class);
+
     // Banks
     Route::prefix('banks')->group(function () {
         Route::get('list', [BankController::class, 'getActiveList']);
@@ -106,4 +115,11 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
         Route::patch('{id}/toggle-status', [VehicleController::class, 'toggleStatus']);
     });
     Route::apiResource('vehicles', VehicleController::class);
+
+    // Suppliers
+    Route::prefix('suppliers')->group(function () {
+        Route::get('list', [SupplierController::class, 'getActiveList']);
+        Route::patch('{id}/toggle-status', [SupplierController::class, 'toggleStatus']);
+    });
+    Route::apiResource('suppliers', SupplierController::class);
 });

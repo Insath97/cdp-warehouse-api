@@ -5,14 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
-class ItemType extends Model
+class ItemVariety extends Model
 {
     use HasFactory;
 
     protected $fillable = [
+        'item_type_id',
         'name',
+        'slug',
         'code',
         'description',
         'is_active',
@@ -23,15 +26,33 @@ class ItemType extends Model
     ];
 
     /**
-     * Relationship with ItemVariety.
+     * Boot the model.
      */
-    public function varieties(): HasMany
+    protected static function boot()
     {
-        return $this->hasMany(ItemVariety::class);
+        parent::boot();
+
+        static::creating(function ($variety) {
+            $variety->slug = Str::slug($variety->name);
+        });
+
+        static::updating(function ($variety) {
+            if ($variety->isDirty('name')) {
+                $variety->slug = Str::slug($variety->name);
+            }
+        });
     }
 
     /**
-     * Scope a query to only include active item types.
+     * Relationship with ItemType.
+     */
+    public function itemType(): BelongsTo
+    {
+        return $this->belongsTo(ItemType::class);
+    }
+
+    /**
+     * Scope a query to only include active varieties.
      */
     public function scopeActive(Builder $query): Builder
     {
@@ -39,7 +60,7 @@ class ItemType extends Model
     }
 
     /**
-     * Scope a query to search item types by name, code, or description.
+     * Scope a query to search varieties by name, code, slug, or description.
      */
     public function scopeSearch(Builder $query, ?string $search): Builder
     {
@@ -50,6 +71,7 @@ class ItemType extends Model
         return $query->where(function (Builder $q) use ($search) {
             $q->where('name', 'like', "%{$search}%")
               ->orWhere('code', 'like', "%{$search}%")
+              ->orWhere('slug', 'like', "%{$search}%")
               ->orWhere('description', 'like', "%{$search}%");
         });
     }

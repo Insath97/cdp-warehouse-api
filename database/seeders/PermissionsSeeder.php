@@ -102,6 +102,26 @@ class PermissionsSeeder extends Seeder
             ['name' => 'Vehicle Update', 'group_name' => 'Vehicle Management Permissions'],
             ['name' => 'Vehicle Delete', 'group_name' => 'Vehicle Management Permissions'],
             ['name' => 'Vehicle Toggle Status', 'group_name' => 'Vehicle Management Permissions'],
+
+            /* Supplier Management */
+            ['name' => 'Supplier Index', 'group_name' => 'Supplier Management Permissions'],
+            ['name' => 'Supplier Create', 'group_name' => 'Supplier Management Permissions'],
+            ['name' => 'Supplier Update', 'group_name' => 'Supplier Management Permissions'],
+            ['name' => 'Supplier Delete', 'group_name' => 'Supplier Management Permissions'],
+            ['name' => 'Supplier Toggle Status', 'group_name' => 'Supplier Management Permissions'],
+
+            /* Item Variety Management */
+            ['name' => 'ItemVariety Index', 'group_name' => 'Item Variety Management Permissions'],
+            ['name' => 'ItemVariety Create', 'group_name' => 'Item Variety Management Permissions'],
+            ['name' => 'ItemVariety Update', 'group_name' => 'Item Variety Management Permissions'],
+            ['name' => 'ItemVariety Delete', 'group_name' => 'Item Variety Management Permissions'],
+            ['name' => 'ItemVariety Toggle Status', 'group_name' => 'Item Variety Management Permissions'],
+
+            /* Vehicle Log Management */
+            ['name' => 'VehicleLog Index', 'group_name' => 'Vehicle Log Management Permissions'],
+            ['name' => 'VehicleLog Create', 'group_name' => 'Vehicle Log Management Permissions'],
+            ['name' => 'VehicleLog View', 'group_name' => 'Vehicle Log Management Permissions'],
+            ['name' => 'VehicleLog Exit', 'group_name' => 'Vehicle Log Management Permissions'],
         ];
 
         foreach ($permissions as $permission) {
