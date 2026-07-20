@@ -21,7 +21,8 @@ class VehicleController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:Vehicle Index', ['only' => ['index', 'show', 'getActiveList']]),
+            new Middleware('permission:Vehicle Index', ['only' => ['index', 'show']]),
+            new Middleware('permission:Vehicle List', ['only' => ['getActiveList']]),
             new Middleware('permission:Vehicle Create', ['only' => ['store']]),
             new Middleware('permission:Vehicle Update', ['only' => ['update']]),
             new Middleware('permission:Vehicle Delete', ['only' => ['destroy']]),

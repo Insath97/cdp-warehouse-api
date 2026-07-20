@@ -21,7 +21,8 @@ class ItemVarietyController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:ItemVariety Index', ['only' => ['index', 'show', 'getActiveList']]),
+            new Middleware('permission:ItemVariety Index', ['only' => ['index', 'show']]),
+            new Middleware('permission:ItemVariety List', ['only' => ['getActiveList']]),
             new Middleware('permission:ItemVariety Create', ['only' => ['store']]),
             new Middleware('permission:ItemVariety Update', ['only' => ['update']]),
             new Middleware('permission:ItemVariety Delete', ['only' => ['destroy']]),

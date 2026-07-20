@@ -21,7 +21,8 @@ class DistrictController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:District Index', ['only' => ['index', 'show', 'getDistrictList']]),
+            new Middleware('permission:District Index', ['only' => ['index', 'show']]),
+            new Middleware('permission:District List', ['only' => ['getDistrictList']]),
             new Middleware('permission:District Create', ['only' => ['store']]),
             new Middleware('permission:District Update', ['only' => ['update']]),
             new Middleware('permission:District Delete', ['only' => ['destroy']]),

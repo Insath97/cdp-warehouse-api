@@ -23,7 +23,8 @@ class SupplierController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:Supplier Index', ['only' => ['index', 'show', 'getActiveList']]),
+            new Middleware('permission:Supplier Index', ['only' => ['index', 'show']]),
+            new Middleware('permission:Supplier List', ['only' => ['getActiveList']]),
             new Middleware('permission:Supplier Create', ['only' => ['store']]),
             new Middleware('permission:Supplier Update', ['only' => ['update']]),
             new Middleware('permission:Supplier Delete', ['only' => ['destroy']]),

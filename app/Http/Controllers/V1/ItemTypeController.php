@@ -21,7 +21,8 @@ class ItemTypeController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:ItemType Index', ['only' => ['index', 'show', 'getActiveList']]),
+            new Middleware('permission:ItemType Index', ['only' => ['index', 'show']]),
+            new Middleware('permission:ItemType List', ['only' => ['getActiveList']]),
             new Middleware('permission:ItemType Create', ['only' => ['store']]),
             new Middleware('permission:ItemType Update', ['only' => ['update']]),
             new Middleware('permission:ItemType Delete', ['only' => ['destroy']]),

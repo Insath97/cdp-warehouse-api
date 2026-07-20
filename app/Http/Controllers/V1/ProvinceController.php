@@ -22,6 +22,7 @@ class ProvinceController extends Controller implements HasMiddleware
     {
         return [
             new Middleware('permission:Province Index', ['only' => ['index', 'show']]),
+            new Middleware('permission:Province List', ['only' => ['getProvinceList']]),
             new Middleware('permission:Province Create', ['only' => ['store']]),
             new Middleware('permission:Province Update', ['only' => ['update']]),
             new Middleware('permission:Province Delete', ['only' => ['destroy']]),

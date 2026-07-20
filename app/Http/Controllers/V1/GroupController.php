@@ -22,6 +22,7 @@ class GroupController extends Controller implements HasMiddleware
     {
         return [
             new Middleware('permission:Group Index', ['only' => ['index', 'show']]),
+            new Middleware('permission:Group List', ['only' => ['getActiveList']]),
             new Middleware('permission:Group Create', ['only' => ['store']]),
             new Middleware('permission:Group Update', ['only' => ['update']]),
             new Middleware('permission:Group Delete', ['only' => ['destroy']]),

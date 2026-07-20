@@ -15,6 +15,7 @@ use App\Http\Controllers\V1\ItemTypeController;
 use App\Http\Controllers\V1\ItemVarietyController;
 use App\Http\Controllers\V1\BankController;
 use App\Http\Controllers\V1\VehicleController;
+use App\Http\Controllers\V1\VehicleLogController;
 use App\Http\Controllers\V1\SupplierController;
 use Illuminate\Support\Facades\Route;
 
@@ -113,8 +114,15 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
     Route::prefix('vehicles')->group(function () {
         Route::get('list', [VehicleController::class, 'getActiveList']);
         Route::patch('{id}/toggle-status', [VehicleController::class, 'toggleStatus']);
+        Route::get('{id}/logs', [VehicleLogController::class, 'getByVehicle']);
     });
     Route::apiResource('vehicles', VehicleController::class);
+
+    // Vehicle Logs
+    Route::prefix('vehicle-logs')->group(function () {
+        Route::post('{id}/exit', [VehicleLogController::class, 'exitLog']);
+    });
+    Route::apiResource('vehicle-logs', VehicleLogController::class);
 
     // Suppliers
     Route::prefix('suppliers')->group(function () {

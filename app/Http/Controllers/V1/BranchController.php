@@ -18,7 +18,8 @@ class BranchController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:Branch Index', only: ['index', 'show', 'getBranchList']),
+            new Middleware('permission:Branch Index', only: ['index', 'show']),
+            new Middleware('permission:Branch List', only: ['getBranchList']),
             new Middleware('permission:Branch Create', only: ['store']),
             new Middleware('permission:Branch Update', only: ['update']),
             new Middleware('permission:Branch Delete', only: ['destroy']),

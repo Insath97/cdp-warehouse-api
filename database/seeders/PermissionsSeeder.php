@@ -17,17 +17,20 @@ class PermissionsSeeder extends Seeder
         $permissions = [
             /* Access Management */
             ['name' => 'Permission Index', 'group_name' => 'Access Management Permissions'],
+            ['name' => 'Permission List', 'group_name' => 'Access Management Permissions'],
             ['name' => 'Permission Create', 'group_name' => 'Access Management Permissions'],
             ['name' => 'Permission Update', 'group_name' => 'Access Management Permissions'],
             ['name' => 'Permission Delete', 'group_name' => 'Access Management Permissions'],
 
             ['name' => 'Role Index', 'group_name' => 'Access Management Permissions'],
+            ['name' => 'Role List', 'group_name' => 'Access Management Permissions'],
             ['name' => 'Role Create', 'group_name' => 'Access Management Permissions'],
             ['name' => 'Role Update', 'group_name' => 'Access Management Permissions'],
             ['name' => 'Role Delete', 'group_name' => 'Access Management Permissions'],
 
             /* User Management */
             ['name' => 'User Index', 'group_name' => 'User Management Permissions'],
+            ['name' => 'User List', 'group_name' => 'User Management Permissions'],
             ['name' => 'User Create', 'group_name' => 'User Management Permissions'],
             ['name' => 'User Update', 'group_name' => 'User Management Permissions'],
             ['name' => 'User Delete', 'group_name' => 'User Management Permissions'],
@@ -35,6 +38,7 @@ class PermissionsSeeder extends Seeder
 
             /* Country Management */
             ['name' => 'Country Index', 'group_name' => 'Country Management Permissions'],
+            ['name' => 'Country List', 'group_name' => 'Country Management Permissions'],
             ['name' => 'Country Create', 'group_name' => 'Country Management Permissions'],
             ['name' => 'Country Update', 'group_name' => 'Country Management Permissions'],
             ['name' => 'Country Delete', 'group_name' => 'Country Management Permissions'],
@@ -42,6 +46,7 @@ class PermissionsSeeder extends Seeder
 
             /* Province Management */
             ['name' => 'Province Index', 'group_name' => 'Province Management Permissions'],
+            ['name' => 'Province List', 'group_name' => 'Province Management Permissions'],
             ['name' => 'Province Create', 'group_name' => 'Province Management Permissions'],
             ['name' => 'Province Update', 'group_name' => 'Province Management Permissions'],
             ['name' => 'Province Delete', 'group_name' => 'Province Management Permissions'],
@@ -49,6 +54,7 @@ class PermissionsSeeder extends Seeder
 
             /* District Management */
             ['name' => 'District Index', 'group_name' => 'District Management Permissions'],
+            ['name' => 'District List', 'group_name' => 'District Management Permissions'],
             ['name' => 'District Create', 'group_name' => 'District Management Permissions'],
             ['name' => 'District Update', 'group_name' => 'District Management Permissions'],
             ['name' => 'District Delete', 'group_name' => 'District Management Permissions'],
@@ -56,6 +62,7 @@ class PermissionsSeeder extends Seeder
 
             /* Branch Management */
             ['name' => 'Branch Index', 'group_name' => 'Branch Management Permissions'],
+            ['name' => 'Branch List', 'group_name' => 'Branch Management Permissions'],
             ['name' => 'Branch Create', 'group_name' => 'Branch Management Permissions'],
             ['name' => 'Branch Update', 'group_name' => 'Branch Management Permissions'],
             ['name' => 'Branch Delete', 'group_name' => 'Branch Management Permissions'],
@@ -63,6 +70,7 @@ class PermissionsSeeder extends Seeder
 
             /* Department Management */
             ['name' => 'Department Index', 'group_name' => 'Department Management Permissions'],
+            ['name' => 'Department List', 'group_name' => 'Department Management Permissions'],
             ['name' => 'Department Create', 'group_name' => 'Department Management Permissions'],
             ['name' => 'Department Update', 'group_name' => 'Department Management Permissions'],
             ['name' => 'Department Delete', 'group_name' => 'Department Management Permissions'],
@@ -70,6 +78,7 @@ class PermissionsSeeder extends Seeder
 
             /* Designation Management */
             ['name' => 'Designation Index', 'group_name' => 'Designation Management Permissions'],
+            ['name' => 'Designation List', 'group_name' => 'Designation Management Permissions'],
             ['name' => 'Designation Create', 'group_name' => 'Designation Management Permissions'],
             ['name' => 'Designation Update', 'group_name' => 'Designation Management Permissions'],
             ['name' => 'Designation Delete', 'group_name' => 'Designation Management Permissions'],
@@ -77,6 +86,7 @@ class PermissionsSeeder extends Seeder
 
             /* Group Management */
             ['name' => 'Group Index', 'group_name' => 'Group Management Permissions'],
+            ['name' => 'Group List', 'group_name' => 'Group Management Permissions'],
             ['name' => 'Group Create', 'group_name' => 'Group Management Permissions'],
             ['name' => 'Group Update', 'group_name' => 'Group Management Permissions'],
             ['name' => 'Group Delete', 'group_name' => 'Group Management Permissions'],
@@ -84,6 +94,7 @@ class PermissionsSeeder extends Seeder
 
             /* Item Type Management */
             ['name' => 'ItemType Index', 'group_name' => 'Item Type Management Permissions'],
+            ['name' => 'ItemType List', 'group_name' => 'Item Type Management Permissions'],
             ['name' => 'ItemType Create', 'group_name' => 'Item Type Management Permissions'],
             ['name' => 'ItemType Update', 'group_name' => 'Item Type Management Permissions'],
             ['name' => 'ItemType Delete', 'group_name' => 'Item Type Management Permissions'],
@@ -91,6 +102,7 @@ class PermissionsSeeder extends Seeder
 
             /* Bank Management */
             ['name' => 'Bank Index', 'group_name' => 'Bank Management Permissions'],
+            ['name' => 'Bank List', 'group_name' => 'Bank Management Permissions'],
             ['name' => 'Bank Create', 'group_name' => 'Bank Management Permissions'],
             ['name' => 'Bank Update', 'group_name' => 'Bank Management Permissions'],
             ['name' => 'Bank Delete', 'group_name' => 'Bank Management Permissions'],
@@ -98,6 +110,7 @@ class PermissionsSeeder extends Seeder
 
             /* Vehicle Management */
             ['name' => 'Vehicle Index', 'group_name' => 'Vehicle Management Permissions'],
+            ['name' => 'Vehicle List', 'group_name' => 'Vehicle Management Permissions'],
             ['name' => 'Vehicle Create', 'group_name' => 'Vehicle Management Permissions'],
             ['name' => 'Vehicle Update', 'group_name' => 'Vehicle Management Permissions'],
             ['name' => 'Vehicle Delete', 'group_name' => 'Vehicle Management Permissions'],
@@ -105,6 +118,7 @@ class PermissionsSeeder extends Seeder
 
             /* Supplier Management */
             ['name' => 'Supplier Index', 'group_name' => 'Supplier Management Permissions'],
+            ['name' => 'Supplier List', 'group_name' => 'Supplier Management Permissions'],
             ['name' => 'Supplier Create', 'group_name' => 'Supplier Management Permissions'],
             ['name' => 'Supplier Update', 'group_name' => 'Supplier Management Permissions'],
             ['name' => 'Supplier Delete', 'group_name' => 'Supplier Management Permissions'],
@@ -112,6 +126,7 @@ class PermissionsSeeder extends Seeder
 
             /* Item Variety Management */
             ['name' => 'ItemVariety Index', 'group_name' => 'Item Variety Management Permissions'],
+            ['name' => 'ItemVariety List', 'group_name' => 'Item Variety Management Permissions'],
             ['name' => 'ItemVariety Create', 'group_name' => 'Item Variety Management Permissions'],
             ['name' => 'ItemVariety Update', 'group_name' => 'Item Variety Management Permissions'],
             ['name' => 'ItemVariety Delete', 'group_name' => 'Item Variety Management Permissions'],
@@ -121,6 +136,8 @@ class PermissionsSeeder extends Seeder
             ['name' => 'VehicleLog Index', 'group_name' => 'Vehicle Log Management Permissions'],
             ['name' => 'VehicleLog Create', 'group_name' => 'Vehicle Log Management Permissions'],
             ['name' => 'VehicleLog View', 'group_name' => 'Vehicle Log Management Permissions'],
+            ['name' => 'VehicleLog Update', 'group_name' => 'Vehicle Log Management Permissions'],
+            ['name' => 'VehicleLog Delete', 'group_name' => 'Vehicle Log Management Permissions'],
             ['name' => 'VehicleLog Exit', 'group_name' => 'Vehicle Log Management Permissions'],
         ];
 

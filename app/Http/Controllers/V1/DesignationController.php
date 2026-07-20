@@ -22,6 +22,7 @@ class DesignationController extends Controller implements HasMiddleware
     {
         return [
             new Middleware('permission:Designation Index', ['only' => ['index', 'show']]),
+            new Middleware('permission:Designation List', ['only' => ['getDesignationList']]),
             new Middleware('permission:Designation Create', ['only' => ['store']]),
             new Middleware('permission:Designation Update', ['only' => ['update']]),
             new Middleware('permission:Designation Delete', ['only' => ['destroy']]),

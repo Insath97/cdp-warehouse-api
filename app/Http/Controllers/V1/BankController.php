@@ -21,7 +21,8 @@ class BankController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:Bank Index', ['only' => ['index', 'show', 'getActiveList']]),
+            new Middleware('permission:Bank Index', ['only' => ['index', 'show']]),
+            new Middleware('permission:Bank List', ['only' => ['getActiveList']]),
             new Middleware('permission:Bank Create', ['only' => ['store']]),
             new Middleware('permission:Bank Update', ['only' => ['update']]),
             new Middleware('permission:Bank Delete', ['only' => ['destroy']]),
