@@ -16,9 +16,11 @@ return new class extends Migration
             $table->string('name');
             $table->string('username')->unique();
             $table->string('email')->nullable()->unique();
+            $table->string('phone', 20)->nullable();
             $table->string('password');
-            $table->enum('user_type', ['admin', 'staff'])->default('admin');
-            $table->foreignId('employee_id')->nullable()->constrained('employees')->nullOnDelete();
+            $table->enum('user_scope', ['global', 'branch', 'warehouse'])->default('global');
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->nullOnDelete();
+            $table->foreignId('warehouse_id')->nullable()->constrained('warehouses')->nullOnDelete();
             $table->boolean('is_active')->default(true);
             $table->boolean('can_login')->default(true);
             $table->timestamp('last_login_at')->nullable();

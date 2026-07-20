@@ -139,6 +139,14 @@ class PermissionsSeeder extends Seeder
             ['name' => 'VehicleLog Update', 'group_name' => 'Vehicle Log Management Permissions'],
             ['name' => 'VehicleLog Delete', 'group_name' => 'Vehicle Log Management Permissions'],
             ['name' => 'VehicleLog Exit', 'group_name' => 'Vehicle Log Management Permissions'],
+
+            /* Warehouse Management */
+            ['name' => 'Warehouse Index', 'group_name' => 'Warehouse Management Permissions'],
+            ['name' => 'Warehouse List', 'group_name' => 'Warehouse Management Permissions'],
+            ['name' => 'Warehouse Create', 'group_name' => 'Warehouse Management Permissions'],
+            ['name' => 'Warehouse Update', 'group_name' => 'Warehouse Management Permissions'],
+            ['name' => 'Warehouse Delete', 'group_name' => 'Warehouse Management Permissions'],
+            ['name' => 'Warehouse Toggle Status', 'group_name' => 'Warehouse Management Permissions'],
         ];
 
         foreach ($permissions as $permission) {
@@ -149,9 +157,25 @@ class PermissionsSeeder extends Seeder
             ]);
         }
 
-        $role = Role::firstOrCreate(['guard_name' => 'api', 'name' => 'Super Admin']);
+        $roles = [
+            'Super Admin',
+            'System Admin',
+            'Branch Admin',
+            'Branch Staff',
+            'Warehouse Admin',
+            'Warehouse Staff',
+            'Weighbridge Operator',
+            'Gate Security',
+        ];
 
+        foreach ($roles as $roleName) {
+            Role::firstOrCreate(['guard_name' => 'api', 'name' => $roleName]);
+        }
+
+        $superAdminRole = Role::where('name', 'Super Admin')->first();
         $allPermissions = Permission::all();
-        $role->syncPermissions($allPermissions);
+        if ($superAdminRole) {
+            $superAdminRole->syncPermissions($allPermissions);
+        }
     }
 }

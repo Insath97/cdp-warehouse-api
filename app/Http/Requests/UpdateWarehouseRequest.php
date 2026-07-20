@@ -6,7 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class CreateUserRequest extends FormRequest
+class UpdateWarehouseRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -15,19 +15,22 @@ class CreateUserRequest extends FormRequest
 
     public function rules(): array
     {
+        $id = $this->route('warehouse') ?? $this->route('id');
+
         return [
-            'name' => 'required|string|max:255',
-            'username' => 'required|string|unique:users,username|max:100',
-            'email' => 'nullable|email|unique:users,email|max:255',
-            'phone' => 'nullable|string|max:20',
-            'password' => 'required|string|min:6',
-            'user_scope' => 'required|in:global,branch,warehouse',
-            'branch_id' => 'required_if:user_scope,branch,warehouse|nullable|exists:branches,id',
-            'warehouse_id' => 'required_if:user_scope,warehouse|nullable|exists:warehouses,id',
+            'branch_id' => 'sometimes|required|exists:branches,id',
+            'name' => 'sometimes|required|string|max:255',
+            'code' => 'sometimes|required|string|max:50|unique:warehouses,code,' . $id,
+            'contact_person' => 'nullable|string|max:255',
+            'phone_primary' => 'sometimes|required|string|max:20',
+            'phone_secondary' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:255',
+            'address_line1' => 'sometimes|required|string|max:255',
+            'address_line2' => 'nullable|string|max:255',
+            'city' => 'sometimes|required|string|max:100',
+            'capacity_mt' => 'nullable|numeric|min:0',
+            'description' => 'nullable|string',
             'is_active' => 'sometimes|boolean',
-            'can_login' => 'sometimes|boolean',
-            'roles' => 'sometimes|array',
-            'roles.*' => 'string',
         ];
     }
 

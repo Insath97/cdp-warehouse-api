@@ -19,7 +19,7 @@ class UserSeeder extends Seeder
             ['email' => 'dev@localhost.com', 'username' => 'devadmin'],
             [
                 'name' => 'Development Admin',
-                'password' => bcrypt('password'),
+                'password' => bcrypt('password123'),
                 'is_active' => true,
                 'can_login' => true,
             ]
@@ -29,6 +29,6 @@ class UserSeeder extends Seeder
 
         $this->command->info('Development admin user created!');
         $this->command->info('Email: dev@localhost.com');
-        $this->command->info('Password: password');
+        $this->command->info('Password: password123');
     }
 }

@@ -17,6 +17,7 @@ use App\Http\Controllers\V1\BankController;
 use App\Http\Controllers\V1\VehicleController;
 use App\Http\Controllers\V1\VehicleLogController;
 use App\Http\Controllers\V1\SupplierController;
+use App\Http\Controllers\V1\WarehouseController;
 use Illuminate\Support\Facades\Route;
 
 /* public routes */
@@ -37,7 +38,10 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
     Route::get('roles/list/', [RoleController::class, 'getAvailableRoles']);
     Route::apiResource('roles', RoleController::class);
 
-    Route::patch('users/{id}/toggle-status', [UserController::class, 'toggleStatus']);
+    Route::prefix('users')->group(function () {
+        Route::get('list', [UserController::class, 'getActiveList']);
+        Route::patch('{id}/toggle-status', [UserController::class, 'toggleStatus']);
+    });
     Route::apiResource('users', UserController::class);
 
     // Countries
@@ -130,4 +134,11 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
         Route::patch('{id}/toggle-status', [SupplierController::class, 'toggleStatus']);
     });
     Route::apiResource('suppliers', SupplierController::class);
+
+    // Warehouses
+    Route::prefix('warehouses')->group(function () {
+        Route::get('list', [WarehouseController::class, 'getActiveList']);
+        Route::patch('{id}/toggle-status', [WarehouseController::class, 'toggleStatus']);
+    });
+    Route::apiResource('warehouses', WarehouseController::class);
 });
