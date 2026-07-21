@@ -1,0 +1,233 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-1234567890ab",
+    "name": "Stock In Batch",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get All",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/stock-in-batches?per_page=15&search=&supplier_id=&warehouse_id=&status=&from_date=&to_date=",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "stock-in-batches"
+          ],
+          "query": [
+            {
+              "key": "per_page",
+              "value": "15"
+            },
+            {
+              "key": "search",
+              "value": ""
+            },
+            {
+              "key": "supplier_id",
+              "value": ""
+            },
+            {
+              "key": "warehouse_id",
+              "value": ""
+            },
+            {
+              "key": "status",
+              "value": ""
+            },
+            {
+              "key": "from_date",
+              "value": ""
+            },
+            {
+              "key": "to_date",
+              "value": ""
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get By Id",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/stock-in-batches/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "stock-in-batches",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/stock-in-batches/list?supplier_id=&warehouse_id=",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "stock-in-batches",
+            "list"
+          ],
+          "query": [
+            {
+              "key": "supplier_id",
+              "value": ""
+            },
+            {
+              "key": "warehouse_id",
+              "value": ""
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"supplier_id\": 1,\n  \"warehouse_id\": 1,\n  \"vehicle_id\": 1,\n  \"vehicle_log_id\": 1,\n  \"grn_number\": \"GRN-2026-0001\",\n  \"received_date\": \"2026-07-21\",\n  \"gross_weight\": 25000.00,\n  \"tare_weight\": 10000.00,\n  \"net_weight\": 15000.00,\n  \"status\": \"received\",\n  \"notes\": \"Initial stock intake of paddy varieties\",\n  \"items\": [\n    {\n      \"item_type_id\": 1,\n      \"item_variety_id\": 1,\n      \"quantity_bags\": 100,\n      \"unit_weight\": 50.00,\n      \"total_weight\": 5000.00,\n      \"unit_price\": 120.00,\n      \"total_price\": 600000.00,\n      \"notes\": \"Samba paddy bags\"\n    },\n    {\n      \"item_type_id\": 1,\n      \"item_variety_id\": 2,\n      \"quantity_bags\": 200,\n      \"unit_weight\": 50.00,\n      \"total_weight\": 10000.00,\n      \"unit_price\": 115.00,\n      \"total_price\": 1150000.00,\n      \"notes\": \"Nadu paddy bags\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/stock-in-batches",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "stock-in-batches"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"supplier_id\": 1,\n  \"warehouse_id\": 1,\n  \"grn_number\": \"GRN-2026-0001-UPD\",\n  \"received_date\": \"2026-07-21\",\n  \"notes\": \"Updated stock intake notes\",\n  \"items\": [\n    {\n      \"item_type_id\": 1,\n      \"item_variety_id\": 1,\n      \"quantity_bags\": 120,\n      \"unit_weight\": 50.00,\n      \"total_weight\": 6000.00,\n      \"unit_price\": 120.00,\n      \"total_price\": 720000.00,\n      \"notes\": \"Updated Samba quantity\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/stock-in-batches/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "stock-in-batches",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Status",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"completed\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/stock-in-batches/1/status",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "stock-in-batches",
+            "1",
+            "status"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/stock-in-batches/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "stock-in-batches",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

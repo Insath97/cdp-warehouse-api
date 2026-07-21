@@ -97,4 +97,12 @@ class Branch extends Model
     {
         return $this->hasMany(Employee::class);
     }
+
+    /**
+     * Get the warehouses belonging to this branch.
+     */
+    public function warehouses(): HasMany
+    {
+        return $this->hasMany(Warehouse::class);
+    }
 }

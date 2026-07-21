@@ -90,12 +90,16 @@ class AuthController extends Controller
                 'lax'
             );
 
-            $user->load(['roles' => function ($query) {
-                $query->select('id', 'name')
-                    ->with(['permissions' => function ($query) {
-                        $query->select('id', 'name');
-                    }]);
-            }]);
+            $user->load([
+                'branch.warehouses:id,branch_id,name,code,is_active',
+                'warehouse.branch:id,name,code',
+                'roles' => function ($query) {
+                    $query->select('id', 'name')
+                        ->with(['permissions' => function ($query) {
+                            $query->select('id', 'name');
+                        }]);
+                }
+            ]);
 
             if ($user->relationLoaded('roles')) {
                 $user->roles->each->makeHidden(['pivot']);
@@ -158,12 +162,16 @@ class AuthController extends Controller
         try {
             $user = auth('api')->user();
 
-            $user->load(['roles' => function ($query) {
-                $query->select('id', 'name')
-                    ->with(['permissions' => function ($query) {
-                        $query->select('id', 'name');
-                    }]);
-            }]);
+            $user->load([
+                'branch.warehouses:id,branch_id,name,code,is_active',
+                'warehouse.branch:id,name,code',
+                'roles' => function ($query) {
+                    $query->select('id', 'name')
+                        ->with(['permissions' => function ($query) {
+                            $query->select('id', 'name');
+                        }]);
+                }
+            ]);
 
             if ($user->relationLoaded('roles')) {
                 $user->roles->each->makeHidden(['pivot']);

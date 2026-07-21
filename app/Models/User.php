@@ -113,6 +113,27 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     }
 
     /**
+     * Get accessible warehouse IDs for the current user based on user scope.
+     * Returns null if user is global (unrestricted access), or an array of warehouse IDs.
+     */
+    public function getAccessibleWarehouseIds(): ?array
+    {
+        if ($this->isGlobal()) {
+            return null;
+        }
+
+        if ($this->isWarehouseScoped() && $this->warehouse_id) {
+            return [$this->warehouse_id];
+        }
+
+        if ($this->isBranchScoped() && $this->branch_id) {
+            return Warehouse::where('branch_id', $this->branch_id)->pluck('id')->toArray();
+        }
+
+        return [];
+    }
+
+    /**
      * Filter query based on the logged-in user's access scope.
      */
     public function scopeAccessibleBy(Builder $query, User $authUser): Builder

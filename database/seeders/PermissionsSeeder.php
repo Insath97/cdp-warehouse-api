@@ -147,6 +147,14 @@ class PermissionsSeeder extends Seeder
             ['name' => 'Warehouse Update', 'group_name' => 'Warehouse Management Permissions'],
             ['name' => 'Warehouse Delete', 'group_name' => 'Warehouse Management Permissions'],
             ['name' => 'Warehouse Toggle Status', 'group_name' => 'Warehouse Management Permissions'],
+
+            /* Stock In Batch Management */
+            ['name' => 'StockInBatch Index', 'group_name' => 'Stock In Batch Management Permissions'],
+            ['name' => 'StockInBatch List', 'group_name' => 'Stock In Batch Management Permissions'],
+            ['name' => 'StockInBatch Create', 'group_name' => 'Stock In Batch Management Permissions'],
+            ['name' => 'StockInBatch Update', 'group_name' => 'Stock In Batch Management Permissions'],
+            ['name' => 'StockInBatch Delete', 'group_name' => 'Stock In Batch Management Permissions'],
+            ['name' => 'StockInBatch Update Status', 'group_name' => 'Stock In Batch Management Permissions'],
         ];
 
         foreach ($permissions as $permission) {
