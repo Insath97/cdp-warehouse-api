@@ -24,7 +24,7 @@ class VehicleController extends Controller implements HasMiddleware
             new Middleware('permission:Vehicle Index', ['only' => ['index', 'show']]),
             new Middleware('permission:Vehicle List', ['only' => ['getActiveList']]),
             new Middleware('permission:Vehicle Create', ['only' => ['store']]),
-            new Middleware('permission:Vehicle Update', ['only' => ['update']]),
+            new Middleware('permission:Vehicle Update', ['only' => ['update', 'updateAvailabilityStatus']]),
             new Middleware('permission:Vehicle Delete', ['only' => ['destroy']]),
             new Middleware('permission:Vehicle Toggle Status', ['only' => ['toggleStatus']]),
         ];
@@ -37,7 +37,10 @@ class VehicleController extends Controller implements HasMiddleware
     {
         try {
             $perPage = $request->get('per_page', 15);
-            $query = Vehicle::with(['creator:id,name,username,email,user_scope,branch_id,warehouse_id']);
+            $query = Vehicle::with([
+                'supplier:id,code,name',
+                'creator:id,name,username,email,user_scope,branch_id,warehouse_id'
+            ]);
 
             // Apply Search Scope if search parameter is present
             if ($request->has('search') && $request->search != '') {
@@ -48,8 +51,20 @@ class VehicleController extends Controller implements HasMiddleware
                 $query->where('is_active', $request->boolean('is_active'));
             }
 
-            if ($request->has('vehicle_type')) {
+            if ($request->has('vehicle_type') && $request->vehicle_type != '') {
                 $query->where('vehicle_type', $request->vehicle_type);
+            }
+
+            if ($request->has('ownership_type') && $request->ownership_type != '') {
+                $query->byOwnershipType($request->ownership_type);
+            }
+
+            if ($request->has('availability_status') && $request->availability_status != '') {
+                $query->byAvailabilityStatus($request->availability_status);
+            }
+
+            if ($request->has('supplier_id') && $request->supplier_id != '') {
+                $query->where('supplier_id', $request->supplier_id);
             }
 
             $vehicles = $query->orderBy('vehicle_number', 'asc')->paginate($perPage);
@@ -77,7 +92,10 @@ class VehicleController extends Controller implements HasMiddleware
             $data = $request->validated();
             $data['created_by'] = auth('api')->id() ?? auth()->id();
             $vehicle = Vehicle::create($data);
-            $vehicle->load(['creator:id,name,username,email,user_scope,branch_id,warehouse_id']);
+            $vehicle->load([
+                'supplier:id,code,name',
+                'creator:id,name,username,email,user_scope,branch_id,warehouse_id'
+            ]);
 
             $this->logActivity('CREATE', 'Vehicle', "Created vehicle: {$vehicle->vehicle_number}", $data);
 
@@ -102,6 +120,7 @@ class VehicleController extends Controller implements HasMiddleware
     {
         try {
             $vehicle = Vehicle::with([
+                'supplier:id,code,name,phone_primary',
                 'creator:id,name,username,email,user_scope,branch_id,warehouse_id',
                 'updater:id,name,username,email'
             ])->find($id);
@@ -146,6 +165,7 @@ class VehicleController extends Controller implements HasMiddleware
             $data['updated_by'] = auth('api')->id() ?? auth()->id();
             $vehicle->update($data);
             $vehicle->load([
+                'supplier:id,code,name',
                 'creator:id,name,username,email,user_scope,branch_id,warehouse_id',
                 'updater:id,name,username,email'
             ]);
@@ -261,6 +281,49 @@ class VehicleController extends Controller implements HasMiddleware
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to toggle vehicle status',
+                'error' => config('app.debug') ? $th->getMessage() : 'Internal server error'
+            ], 500);
+        }
+    }
+
+    /**
+     * Update vehicle operational availability status.
+     */
+    public function updateAvailabilityStatus(Request $request, string $id)
+    {
+        try {
+            $vehicle = Vehicle::find($id);
+
+            if (!$vehicle) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Vehicle not found'
+                ], 404);
+            }
+
+            $validated = $request->validate([
+                'availability_status' => 'required|string|in:available,in_transit,maintenance,out_of_service',
+            ]);
+
+            $vehicle->availability_status = $validated['availability_status'];
+            $vehicle->updated_by = auth('api')->id() ?? auth()->id();
+            $vehicle->save();
+
+            $this->logActivity('UPDATE_AVAILABILITY', 'Vehicle', "Updated vehicle availability status: {$vehicle->vehicle_number} to {$vehicle->availability_status}");
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Vehicle availability status updated successfully',
+                'data' => [
+                    'id' => $vehicle->id,
+                    'vehicle_number' => $vehicle->vehicle_number,
+                    'availability_status' => $vehicle->availability_status,
+                ]
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to update vehicle availability status',
                 'error' => config('app.debug') ? $th->getMessage() : 'Internal server error'
             ], 500);
         }

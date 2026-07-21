@@ -122,6 +122,7 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
     Route::prefix('vehicles')->group(function () {
         Route::get('list', [VehicleController::class, 'getActiveList']);
         Route::patch('{id}/toggle-status', [VehicleController::class, 'toggleStatus']);
+        Route::patch('{id}/availability', [VehicleController::class, 'updateAvailabilityStatus']);
         Route::get('{id}/logs', [VehicleLogController::class, 'getByVehicle']);
     });
     Route::apiResource('vehicles', VehicleController::class);

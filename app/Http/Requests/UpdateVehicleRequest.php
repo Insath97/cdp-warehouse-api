@@ -28,6 +28,9 @@ class UpdateVehicleRequest extends FormRequest
             'driver_phone' => 'nullable|string|max:20',
             'driver_nic' => 'nullable|string|max:20',
             'vehicle_type' => 'sometimes|string|in:lorry,pickup,van,tractor,other',
+            'ownership_type' => 'sometimes|string|in:own,supplier,third_party',
+            'supplier_id' => 'nullable|exists:suppliers,id',
+            'availability_status' => 'sometimes|string|in:available,in_transit,maintenance,out_of_service',
             'tare_weight' => 'nullable|numeric|min:0',
             'is_active' => 'sometimes|boolean',
         ];

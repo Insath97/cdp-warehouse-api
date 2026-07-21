@@ -18,6 +18,9 @@ return new class extends Migration
             $table->string('driver_phone', 20)->nullable();
             $table->string('driver_nic', 20)->nullable();
             $table->enum('vehicle_type', ['lorry', 'pickup', 'van', 'tractor', 'other']);
+            $table->enum('ownership_type', ['own', 'supplier', 'third_party'])->default('own');
+            $table->foreignId('supplier_id')->nullable()->constrained('suppliers')->nullOnDelete();
+            $table->enum('availability_status', ['available', 'in_transit', 'maintenance', 'out_of_service'])->default('available');
             $table->decimal('tare_weight', 10, 2)->nullable();
             $table->boolean('is_active')->default(true);
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();

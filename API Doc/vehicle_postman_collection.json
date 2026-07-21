@@ -16,12 +16,42 @@
           }
         ],
         "url": {
-          "raw": "{{base_url}}/vehicles",
+          "raw": "{{base_url}}/vehicles?per_page=15&search=&vehicle_type=&ownership_type=&availability_status=&supplier_id=&is_active=",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "vehicles"
+          ],
+          "query": [
+            {
+              "key": "per_page",
+              "value": "15"
+            },
+            {
+              "key": "search",
+              "value": ""
+            },
+            {
+              "key": "vehicle_type",
+              "value": ""
+            },
+            {
+              "key": "ownership_type",
+              "value": ""
+            },
+            {
+              "key": "availability_status",
+              "value": ""
+            },
+            {
+              "key": "supplier_id",
+              "value": ""
+            },
+            {
+              "key": "is_active",
+              "value": ""
+            }
           ]
         }
       },
@@ -74,7 +104,7 @@
       "response": []
     },
     {
-      "name": "Create",
+      "name": "Create Own Vehicle",
       "request": {
         "method": "POST",
         "header": [
@@ -89,7 +119,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"vehicle_number\": \"GA-1234\",\n  \"driver_name\": \"Sunil Perera\",\n  \"driver_phone\": \"+94712345678\",\n  \"driver_nic\": \"198012345678\",\n  \"vehicle_type\": \"lorry\",\n  \"tare_weight\": 4500.00,\n  \"is_active\": true\n}"
+          "raw": "{\n  \"vehicle_number\": \"GA-1234\",\n  \"driver_name\": \"Sunil Perera\",\n  \"driver_phone\": \"+94712345678\",\n  \"driver_nic\": \"198012345678\",\n  \"vehicle_type\": \"lorry\",\n  \"ownership_type\": \"own\",\n  \"availability_status\": \"available\",\n  \"tare_weight\": 4500.00,\n  \"is_active\": true\n}"
         },
         "url": {
           "raw": "{{base_url}}/vehicles",
@@ -104,7 +134,37 @@
       "response": []
     },
     {
-      "name": "Update",
+      "name": "Create Supplier Vehicle",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"vehicle_number\": \"WP-9988\",\n  \"driver_name\": \"Kamal Silva\",\n  \"driver_phone\": \"+94771234567\",\n  \"driver_nic\": \"198599887766\",\n  \"vehicle_type\": \"lorry\",\n  \"ownership_type\": \"supplier\",\n  \"supplier_id\": 1,\n  \"availability_status\": \"available\",\n  \"tare_weight\": 5200.00,\n  \"is_active\": true\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/vehicles",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "vehicles"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Vehicle",
       "request": {
         "method": "PUT",
         "header": [
@@ -119,7 +179,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"vehicle_number\": \"GA-1234-UPD\",\n  \"driver_name\": \"Sunil Perera Updated\",\n  \"driver_phone\": \"+94712345679\",\n  \"driver_nic\": \"198012345679\",\n  \"vehicle_type\": \"lorry\",\n  \"tare_weight\": 4600.00,\n  \"is_active\": true\n}"
+          "raw": "{\n  \"vehicle_number\": \"GA-1234-UPD\",\n  \"driver_name\": \"Sunil Perera Updated\",\n  \"driver_phone\": \"+94712345679\",\n  \"driver_nic\": \"198012345679\",\n  \"vehicle_type\": \"lorry\",\n  \"ownership_type\": \"own\",\n  \"availability_status\": \"available\",\n  \"tare_weight\": 4600.00,\n  \"is_active\": true\n}"
         },
         "url": {
           "raw": "{{base_url}}/vehicles/1",
@@ -129,6 +189,38 @@
           "path": [
             "vehicles",
             "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Availability Status",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"availability_status\": \"in_transit\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/vehicles/1/availability",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "vehicles",
+            "1",
+            "availability"
           ]
         }
       },
