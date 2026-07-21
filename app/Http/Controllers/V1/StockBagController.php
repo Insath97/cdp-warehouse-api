@@ -127,7 +127,7 @@ class StockBagController extends Controller implements HasMiddleware
                 'supplier:id,code,name',
                 'itemType:id,name,code',
                 'itemVariety:id,name,code',
-                'creator:id,name',
+                'creator:id,name,username,email,user_scope,branch_id,warehouse_id',
             ]);
 
             // User Branch/Warehouse Scope Authorization Filter
@@ -337,6 +337,7 @@ class StockBagController extends Controller implements HasMiddleware
             'itemType:id,name,code',
             'itemVariety:id,name,code',
             'warehouse:id,name,code',
+            'creator:id,name,username,email,user_scope,branch_id,warehouse_id',
         ]);
 
         return $bag;
@@ -356,8 +357,8 @@ class StockBagController extends Controller implements HasMiddleware
                 'supplier:id,code,name',
                 'itemType:id,name,code',
                 'itemVariety:id,name,code,slug',
-                'creator:id,name,email',
-                'updater:id,name,email',
+                'creator:id,name,username,email,user_scope,branch_id,warehouse_id',
+                'updater:id,name,username,email',
             ])->find($id);
 
             if (!$bag) {

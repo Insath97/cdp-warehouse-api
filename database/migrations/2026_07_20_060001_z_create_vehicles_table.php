@@ -20,6 +20,8 @@ return new class extends Migration
             $table->enum('vehicle_type', ['lorry', 'pickup', 'van', 'tractor', 'other']);
             $table->decimal('tare_weight', 10, 2)->nullable();
             $table->boolean('is_active')->default(true);
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }

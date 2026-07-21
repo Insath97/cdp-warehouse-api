@@ -45,7 +45,7 @@ class StockInBatchController extends Controller implements HasMiddleware
                 'vehicle:id,vehicle_number',
                 'items.itemType:id,name,code',
                 'items.itemVariety:id,name,code',
-                'creator:id,name',
+                'creator:id,name,username,email,user_scope,branch_id,warehouse_id',
             ]);
 
             // Apply logged-in user branch/warehouse scope filtering
@@ -192,7 +192,7 @@ class StockInBatchController extends Controller implements HasMiddleware
                 'vehicleLog:id,log_number',
                 'items.itemType:id,name,code',
                 'items.itemVariety:id,name,code',
-                'creator:id,name',
+                'creator:id,name,username,email,user_scope,branch_id,warehouse_id',
             ]);
 
             return response()->json([
@@ -222,8 +222,8 @@ class StockInBatchController extends Controller implements HasMiddleware
                 'vehicleLog:id,log_number,entry_time,exit_time',
                 'items.itemType:id,name,code,description',
                 'items.itemVariety:id,name,code,slug,description',
-                'creator:id,name,email',
-                'updater:id,name,email',
+                'creator:id,name,username,email,user_scope,branch_id,warehouse_id',
+                'updater:id,name,username,email',
             ])->find($id);
 
             if (!$batch) {

@@ -188,7 +188,7 @@ The **CDP Paddy Warehouse Management System (PWMS)** is a comprehensive backend 
 | description      | string    | Entry description                              |
 | reference_type   | string    | Related entity type (batch, stock_transaction) |
 | reference_id     | bigint    | Related entity ID (polymorphic)                |
-| total_amount     | decimal   | Total debit/credit amount                      |
+| total_amount     | -=   | Total debit/credit amount                      |
 | created_by       | FK (user) | Who created the entry                          |
 | timestamps       |           |                                                |
 

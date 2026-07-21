@@ -37,7 +37,7 @@ class VehicleController extends Controller implements HasMiddleware
     {
         try {
             $perPage = $request->get('per_page', 15);
-            $query = Vehicle::query();
+            $query = Vehicle::with(['creator:id,name,username,email,user_scope,branch_id,warehouse_id']);
 
             // Apply Search Scope if search parameter is present
             if ($request->has('search') && $request->search != '') {
@@ -75,7 +75,9 @@ class VehicleController extends Controller implements HasMiddleware
     {
         try {
             $data = $request->validated();
+            $data['created_by'] = auth('api')->id() ?? auth()->id();
             $vehicle = Vehicle::create($data);
+            $vehicle->load(['creator:id,name,username,email,user_scope,branch_id,warehouse_id']);
 
             $this->logActivity('CREATE', 'Vehicle', "Created vehicle: {$vehicle->vehicle_number}", $data);
 
@@ -99,7 +101,10 @@ class VehicleController extends Controller implements HasMiddleware
     public function show(string $id)
     {
         try {
-            $vehicle = Vehicle::find($id);
+            $vehicle = Vehicle::with([
+                'creator:id,name,username,email,user_scope,branch_id,warehouse_id',
+                'updater:id,name,username,email'
+            ])->find($id);
 
             if (! $vehicle) {
                 return response()->json([
@@ -138,7 +143,12 @@ class VehicleController extends Controller implements HasMiddleware
             }
 
             $data = $request->validated();
+            $data['updated_by'] = auth('api')->id() ?? auth()->id();
             $vehicle->update($data);
+            $vehicle->load([
+                'creator:id,name,username,email,user_scope,branch_id,warehouse_id',
+                'updater:id,name,username,email'
+            ]);
 
             $this->logActivity('UPDATE', 'Vehicle', "Updated vehicle: {$vehicle->vehicle_number}", $data);
 

@@ -143,15 +143,15 @@ The system covers the complete lifecycle of paddy — from the moment a supplier
 | moisture_percentage | decimal(5,2) | e.g., 13.50                               |
 | grade               | enum         | A, B, C, reject                           |
 | foreign_materials   | decimal(5,2) | Percentage of foreign matter              |
-| broken_percentage   | decimal(5,2) | Nullable                                  |
+| broken_percentage   | decimal(5,2) | Nullable                                  |  
 | colour_quality      | enum         | good, acceptable, poor, nullable          |
 | remarks             | text         | Quality notes                             |
 | inspection_result   | enum         | approved, conditional, rejected           |
 | inspected_by        | FK (users)   | Inspector                                 |
 | inspected_at        | datetime     |                                           |
 | timestamps          |              |                                           |
+~!2
 
----
 
 ### 3.7 Paddy Batches Table (`paddy_batches`)
 

@@ -41,7 +41,7 @@ class VehicleLogController extends Controller implements HasMiddleware
     {
         try {
             $perPage = $request->get('per_page', 15);
-            $query = VehicleLog::with(['vehicle', 'creator']);
+            $query = VehicleLog::with(['vehicle', 'creator:id,name,username,email,user_scope,branch_id,warehouse_id']);
 
             // Apply Search Scope if search parameter is present
             if ($request->has('search') && $request->search != '') {
@@ -165,7 +165,7 @@ class VehicleLogController extends Controller implements HasMiddleware
     public function show(string $id)
     {
         try {
-            $vehicleLog = VehicleLog::with(['vehicle', 'creator'])->find($id);
+            $vehicleLog = VehicleLog::with(['vehicle', 'creator:id,name,username,email,user_scope,branch_id,warehouse_id'])->find($id);
 
             if (!$vehicleLog) {
                 return response()->json([
@@ -269,7 +269,7 @@ class VehicleLogController extends Controller implements HasMiddleware
             }
 
             $vehicleLog->update($data);
-            $vehicleLog->load(['vehicle', 'creator']);
+            $vehicleLog->load(['vehicle', 'creator:id,name,username,email,user_scope,branch_id,warehouse_id']);
 
             $this->logActivity('UPDATE', 'VehicleLog', "Updated vehicle log entry: {$vehicleLog->log_number}", $data);
 
