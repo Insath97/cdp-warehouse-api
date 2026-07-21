@@ -19,6 +19,7 @@ use App\Http\Controllers\V1\VehicleLogController;
 use App\Http\Controllers\V1\SupplierController;
 use App\Http\Controllers\V1\WarehouseController;
 use App\Http\Controllers\V1\StockInBatchController;
+use App\Http\Controllers\V1\StockBagController;
 use Illuminate\Support\Facades\Route;
 
 /* public routes */
@@ -149,4 +150,12 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
         Route::patch('{id}/status', [StockInBatchController::class, 'updateStatus']);
     });
     Route::apiResource('stock-in-batches', StockInBatchController::class);
+
+    // Stock Bags
+    Route::prefix('stock-bags')->group(function () {
+        Route::get('batch/{batchId}/details', [StockBagController::class, 'getBatchDetails']);
+        Route::get('list', [StockBagController::class, 'getActiveList']);
+        Route::patch('{id}/status', [StockBagController::class, 'updateStatus']);
+    });
+    Route::apiResource('stock-bags', StockBagController::class);
 });

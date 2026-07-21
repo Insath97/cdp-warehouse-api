@@ -1,0 +1,284 @@
+{
+  "info": {
+    "_postman_id": "b2c3d4e5-f6a7-8901-bcde-2345678901bc",
+    "name": "Stock Bag",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get Batch Details for Bag Entry",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/stock-bags/batch/1/details",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "stock-bags",
+            "batch",
+            "1",
+            "details"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/stock-bags?per_page=15&search=&batch_id=&warehouse_id=&status=&item_variety_id=",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "stock-bags"
+          ],
+          "query": [
+            {
+              "key": "per_page",
+              "value": "15"
+            },
+            {
+              "key": "search",
+              "value": ""
+            },
+            {
+              "key": "batch_id",
+              "value": ""
+            },
+            {
+              "key": "warehouse_id",
+              "value": ""
+            },
+            {
+              "key": "status",
+              "value": ""
+            },
+            {
+              "key": "item_variety_id",
+              "value": ""
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get By Id",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/stock-bags/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "stock-bags",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List Active",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/stock-bags/list?batch_id=&item_variety_id=",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "stock-bags",
+            "list"
+          ],
+          "query": [
+            {
+              "key": "batch_id",
+              "value": ""
+            },
+            {
+              "key": "item_variety_id",
+              "value": ""
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Single Bag",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"stock_in_batch_id\": 1,\n  \"stock_in_batch_item_id\": 1,\n  \"item_variety_id\": 1,\n  \"bag_weight\": 50.25,\n  \"unit_price\": 120.00,\n  \"selling_price\": 145.00,\n  \"location_id\": \"WH-A-ROW1-RACK3\",\n  \"status\": \"in_stock\",\n  \"notes\": \"Individual bag weight test entry\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/stock-bags",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "stock-bags"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Bulk Bags",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"stock_in_batch_id\": 1,\n  \"bags\": [\n    {\n      \"stock_in_batch_item_id\": 1,\n      \"item_variety_id\": 1,\n      \"bag_weight\": 50.10,\n      \"unit_price\": 120.00,\n      \"selling_price\": 145.00,\n      \"location_id\": \"WH-A-ROW1-RACK1\",\n      \"notes\": \"Bag 1 entry\"\n    },\n    {\n      \"stock_in_batch_item_id\": 1,\n      \"item_variety_id\": 1,\n      \"bag_weight\": 49.95,\n      \"unit_price\": 120.00,\n      \"selling_price\": 145.00,\n      \"location_id\": \"WH-A-ROW1-RACK1\",\n      \"notes\": \"Bag 2 entry\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/stock-bags",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "stock-bags"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Bag",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"bag_weight\": 50.30,\n  \"unit_price\": 120.00,\n  \"selling_price\": 150.00,\n  \"location_id\": \"WH-A-ROW1-RACK4\",\n  \"status\": \"in_stock\",\n  \"notes\": \"Updated bag weight and location\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/stock-bags/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "stock-bags",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Status",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"dispatched\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/stock-bags/1/status",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "stock-bags",
+            "1",
+            "status"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Bag",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/stock-bags/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "stock-bags",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

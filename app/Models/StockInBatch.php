@@ -65,6 +65,14 @@ class StockInBatch extends Model
     }
 
     /**
+     * Relationship with StockBags.
+     */
+    public function bags(): HasMany
+    {
+        return $this->hasMany(StockBag::class, 'stock_in_batch_id');
+    }
+
+    /**
      * Relationship with Supplier.
      */
     public function supplier(): BelongsTo

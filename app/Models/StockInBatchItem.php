@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class StockInBatchItem extends Model
 {
@@ -56,5 +57,13 @@ class StockInBatchItem extends Model
     public function itemVariety(): BelongsTo
     {
         return $this->belongsTo(ItemVariety::class, 'item_variety_id');
+    }
+
+    /**
+     * Relationship with StockBags.
+     */
+    public function bags(): HasMany
+    {
+        return $this->hasMany(StockBag::class, 'stock_in_batch_item_id');
     }
 }
