@@ -73,6 +73,14 @@ class StockInBatch extends Model
     }
 
     /**
+     * Relationship with QualityInspections.
+     */
+    public function qualityInspections(): HasMany
+    {
+        return $this->hasMany(QualityInspection::class, 'stock_in_batch_id');
+    }
+
+    /**
      * Relationship with Supplier.
      */
     public function supplier(): BelongsTo

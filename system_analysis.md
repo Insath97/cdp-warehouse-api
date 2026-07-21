@@ -180,7 +180,7 @@ The **CDP Paddy Warehouse Management System (PWMS)** is a comprehensive backend 
 ---
 
 ### 3.10 Journal Entries Table (`journal_entries`)
-| Column           | Type      | Notes                                          |
+| Column           | Type      | Notes                                          | 
 |------------------|-----------|------------------------------------------------|
 | id               | bigint PK |                                                |
 | entry_number     | string    | Unique journal entry reference                 |

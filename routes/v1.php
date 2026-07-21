@@ -20,6 +20,8 @@ use App\Http\Controllers\V1\SupplierController;
 use App\Http\Controllers\V1\WarehouseController;
 use App\Http\Controllers\V1\StockInBatchController;
 use App\Http\Controllers\V1\StockBagController;
+use App\Http\Controllers\V1\QualityInspectionController;
+use App\Http\Controllers\V1\ActivityLogController;
 use Illuminate\Support\Facades\Route;
 
 /* public routes */
@@ -158,4 +160,13 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
         Route::patch('{id}/status', [StockBagController::class, 'updateStatus']);
     });
     Route::apiResource('stock-bags', StockBagController::class);
+
+    // Quality Inspections
+    Route::apiResource('quality-inspections', QualityInspectionController::class);
+
+    // Activity Logs (Read-only: Get All and Get By ID)
+    Route::prefix('activity-logs')->group(function () {
+        Route::get('/', [ActivityLogController::class, 'index']);
+        Route::get('{id}', [ActivityLogController::class, 'show']);
+    });
 });

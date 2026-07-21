@@ -163,6 +163,16 @@ class PermissionsSeeder extends Seeder
             ['name' => 'StockBag Update', 'group_name' => 'Stock Bag Management Permissions'],
             ['name' => 'StockBag Delete', 'group_name' => 'Stock Bag Management Permissions'],
             ['name' => 'StockBag Update Status', 'group_name' => 'Stock Bag Management Permissions'],
+
+            /* Quality Inspection Management */
+            ['name' => 'QualityInspection Index', 'group_name' => 'Quality Inspection Management Permissions'],
+            ['name' => 'QualityInspection Create', 'group_name' => 'Quality Inspection Management Permissions'],
+            ['name' => 'QualityInspection Update', 'group_name' => 'Quality Inspection Management Permissions'],
+            ['name' => 'QualityInspection Delete', 'group_name' => 'Quality Inspection Management Permissions'],
+
+            /* Activity Log Management */
+            ['name' => 'ActivityLog Index', 'group_name' => 'Activity Log Management Permissions'],
+            ['name' => 'ActivityLog Show', 'group_name' => 'Activity Log Management Permissions'],
         ];
 
         foreach ($permissions as $permission) {

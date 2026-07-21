@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class StockBag extends Model
 {
@@ -125,6 +126,11 @@ class StockBag extends Model
     public function itemVariety(): BelongsTo
     {
         return $this->belongsTo(ItemVariety::class, 'item_variety_id');
+    }
+
+    public function qualityInspections(): HasMany
+    {
+        return $this->hasMany(QualityInspection::class, 'stock_bag_id');
     }
 
     public function creator(): BelongsTo
