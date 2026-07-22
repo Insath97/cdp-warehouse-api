@@ -1,0 +1,185 @@
+{
+  "info": {
+    "_postman_id": "8c2bb655-927b-4029-a128-43d93ab498be",
+    "name": "Buyer",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get All",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/buyers",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "buyers"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get By Id",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/buyers/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "buyers",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List (Active)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/buyers/list",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "buyers",
+            "list"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"BYR-0001\",\n  \"name\": \"Ceylon Distributors LLC\",\n  \"phone_primary\": \"+94771234567\",\n  \"phone_secondary\": \"+94112345678\",\n  \"email\": \"sales@ceylondistributors.lk\",\n  \"address_line1\": \"No 45, Galle Road\",\n  \"city\": \"Colombo\",\n  \"country_id\": 1,\n  \"tax_number\": \"VAT-88776655\",\n  \"notes\": \"Premium buyer profile\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/buyers",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "buyers"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"BYR-0001\",\n  \"name\": \"Ceylon Distributors LLC (Updated)\",\n  \"phone_primary\": \"+94771234567\",\n  \"phone_secondary\": \"+94112345678\",\n  \"email\": \"sales@ceylondistributors.lk\",\n  \"address_line1\": \"No 45, Galle Road\",\n  \"city\": \"Colombo\",\n  \"country_id\": 1,\n  \"tax_number\": \"VAT-88776655\",\n  \"is_active\": true,\n  \"notes\": \"Updated premium buyer profile\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/buyers/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "buyers",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Toggle Status",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/buyers/1/toggle-status",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "buyers",
+            "1",
+            "toggle-status"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/buyers/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "buyers",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

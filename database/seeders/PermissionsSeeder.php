@@ -173,6 +173,33 @@ class PermissionsSeeder extends Seeder
             /* Activity Log Management */
             ['name' => 'ActivityLog Index', 'group_name' => 'Activity Log Management Permissions'],
             ['name' => 'ActivityLog Show', 'group_name' => 'Activity Log Management Permissions'],
+
+            /* Buyer Management */
+            ['name' => 'Buyer Index', 'group_name' => 'Buyer Management Permissions'],
+            ['name' => 'Buyer List', 'group_name' => 'Buyer Management Permissions'],
+            ['name' => 'Buyer Create', 'group_name' => 'Buyer Management Permissions'],
+            ['name' => 'Buyer Update', 'group_name' => 'Buyer Management Permissions'],
+            ['name' => 'Buyer Delete', 'group_name' => 'Buyer Management Permissions'],
+            ['name' => 'Buyer Toggle Status', 'group_name' => 'Buyer Management Permissions'],
+
+            /* Invoice Management */
+            ['name' => 'Invoice Index', 'group_name' => 'Invoice Management Permissions'],
+            ['name' => 'Invoice Create', 'group_name' => 'Invoice Management Permissions'],
+            ['name' => 'Invoice Update', 'group_name' => 'Invoice Management Permissions'],
+            ['name' => 'Invoice Delete', 'group_name' => 'Invoice Management Permissions'],
+
+            /* Stock Dispatch Management */
+            ['name' => 'StockDispatch Index', 'group_name' => 'Stock Dispatch Management Permissions'],
+            ['name' => 'StockDispatch Create', 'group_name' => 'Stock Dispatch Management Permissions'],
+            ['name' => 'StockDispatch Update', 'group_name' => 'Stock Dispatch Management Permissions'],
+            ['name' => 'StockDispatch Delete', 'group_name' => 'Stock Dispatch Management Permissions'],
+            ['name' => 'StockDispatch Confirm', 'group_name' => 'Stock Dispatch Management Permissions'],
+            ['name' => 'StockDispatch GateExit', 'group_name' => 'Stock Dispatch Management Permissions'],
+
+            /* Barcode Token Management */
+            ['name' => 'BarcodeToken Index', 'group_name' => 'Barcode Token Management Permissions'],
+            ['name' => 'BarcodeToken Create', 'group_name' => 'Barcode Token Management Permissions'],
+            ['name' => 'BarcodeToken Verify', 'group_name' => 'Barcode Token Management Permissions'],
         ];
 
         foreach ($permissions as $permission) {

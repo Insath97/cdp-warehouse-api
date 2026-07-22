@@ -133,6 +133,11 @@ class StockBag extends Model
         return $this->hasMany(QualityInspection::class, 'stock_bag_id');
     }
 
+    public function dispatchItems(): HasMany
+    {
+        return $this->hasMany(DispatchItem::class, 'stock_bag_id');
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

@@ -22,6 +22,10 @@ use App\Http\Controllers\V1\StockInBatchController;
 use App\Http\Controllers\V1\StockBagController;
 use App\Http\Controllers\V1\QualityInspectionController;
 use App\Http\Controllers\V1\ActivityLogController;
+use App\Http\Controllers\V1\BuyerController;
+use App\Http\Controllers\V1\InvoiceController;
+use App\Http\Controllers\V1\StockDispatchController;
+use App\Http\Controllers\V1\BarcodeTokenController;
 use Illuminate\Support\Facades\Route;
 
 /* public routes */
@@ -164,6 +168,33 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
 
     // Quality Inspections
     Route::apiResource('quality-inspections', QualityInspectionController::class);
+
+    // Buyers
+    Route::prefix('buyers')->group(function () {
+        Route::get('list', [BuyerController::class, 'getActiveList']);
+        Route::patch('{id}/toggle-status', [BuyerController::class, 'toggleStatus']);
+    });
+    Route::apiResource('buyers', BuyerController::class);
+
+    // Invoices
+    Route::prefix('invoices')->group(function () {
+        Route::patch('{id}/payment-status', [InvoiceController::class, 'updatePaymentStatus']);
+    });
+    Route::apiResource('invoices', InvoiceController::class);
+
+    // Stock Dispatches
+    Route::prefix('stock-dispatches')->group(function () {
+        Route::patch('{id}/confirm', [StockDispatchController::class, 'confirmGatePass']);
+        Route::patch('{id}/gate-exit', [StockDispatchController::class, 'recordGateExit']);
+    });
+    Route::apiResource('stock-dispatches', StockDispatchController::class);
+
+    // Barcode / QR Tokens
+    Route::prefix('barcode-tokens')->group(function () {
+        Route::post('verify', [BarcodeTokenController::class, 'verifyAndUse']);
+        Route::get('{code}/verify', [BarcodeTokenController::class, 'verifyStatus']);
+    });
+    Route::apiResource('barcode-tokens', BarcodeTokenController::class)->except(['update', 'destroy']);
 
     // Activity Logs (Read-only: Get All and Get By ID)
     Route::prefix('activity-logs')->group(function () {

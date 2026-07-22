@@ -1,0 +1,186 @@
+{
+  "info": {
+    "_postman_id": "ad3cc825-927b-4029-a128-43d93ab498be",
+    "name": "Stock Dispatch",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get All",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/stock-dispatches",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "stock-dispatches"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get By Id",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/stock-dispatches/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "stock-dispatches",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Dispatch (Unified Stock Out)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"buyer_id\": 1,\n  \"dispatch_type\": \"sales\",\n  \"dispatch_date\": \"2026-07-22\",\n  \"delivery_note_reference\": \"DN-2026-0991\",\n  \"vehicle_id\": 1,\n  \"notes\": \"Direct client dispatch out of warehouse 1\",\n  \"items\": [\n    {\n      \"stock_bag_id\": 1,\n      \"selling_price\": 120.50,\n      \"notes\": \"Premium bag 1\"\n    },\n    {\n      \"stock_bag_id\": 2,\n      \"selling_price\": 120.50,\n      \"notes\": \"Premium bag 2\"\n    }\n  ],\n  \"invoice\": {\n    \"invoice_number\": \"INV-CDP-9988\",\n    \"discount_amount\": 500.00,\n    \"tax_amount\": 1200.00,\n    \"payment_method\": \"bank_transfer\",\n    \"notes\": \"Billable immediately\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/stock-dispatches",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "stock-dispatches"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Dispatch (Draft Only)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"buyer_id\": 1,\n  \"dispatch_type\": \"sales\",\n  \"dispatch_date\": \"2026-07-22\",\n  \"delivery_note_reference\": \"DN-2026-0991-REV\",\n  \"vehicle_id\": 1,\n  \"notes\": \"Direct client dispatch (Updated payload)\",\n  \"items\": [\n    {\n      \"stock_bag_id\": 2,\n      \"selling_price\": 125.00,\n      \"notes\": \"Only bag 2 remains, adjusted price\"\n    }\n  ],\n  \"invoice\": {\n    \"invoice_number\": \"INV-CDP-9988\",\n    \"discount_amount\": 100.00,\n    \"tax_amount\": 600.00,\n    \"payment_method\": \"bank_transfer\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/stock-dispatches/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "stock-dispatches",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Confirm (Issue Gate Pass)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/stock-dispatches/1/confirm",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "stock-dispatches",
+            "1",
+            "confirm"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Gate Exit (Final Outflow)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/stock-dispatches/1/gate-exit",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "stock-dispatches",
+            "1",
+            "gate-exit"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete (Draft Only)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/stock-dispatches/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "stock-dispatches",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

@@ -1,0 +1,145 @@
+{
+  "info": {
+    "_postman_id": "bd3cc825-927b-4029-a128-43d93ab498bf",
+    "name": "Barcode Token Batch Tracking",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get All (List Batches)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/barcode-tokens?token_type=qr",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "barcode-tokens"
+          ],
+          "query": [
+            {
+              "key": "token_type",
+              "value": "qr"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Batch Details (Shows child tokens)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/barcode-tokens/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "barcode-tokens",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Check Single Code Status (Verify without using)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/barcode-tokens/9990000000018/verify",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "barcode-tokens",
+            "9990000000018",
+            "verify"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Bulk Generate Batch of Tokens",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"quantity\": 100,\n  \"token_type\": \"qr\",\n  \"item_type_id\": 1,\n  \"item_variety_id\": 1,\n  \"notes\": \"Generate first batch of 100 Nadu QR tags\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/barcode-tokens",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "barcode-tokens"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Verify and Use Token (Scan)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"token_code\": \"9990000000018\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/barcode-tokens/verify",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "barcode-tokens",
+            "verify"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
