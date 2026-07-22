@@ -86,7 +86,7 @@ class BarcodeTokenBatch extends Model
             $q->where('batch_number', 'like', "%{$search}%")
               ->orWhere('notes', 'like', "%{$search}%")
               ->orWhereHas('itemVariety', function (Builder $vq) use ($search) {
-                  vq->where('name', 'like', "%{$search}%");
+                  $vq->where('name', 'like', "%{$search}%");
               });
         });
     }
