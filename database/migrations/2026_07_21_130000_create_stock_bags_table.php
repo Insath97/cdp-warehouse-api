@@ -37,6 +37,11 @@ return new class extends Migration
 
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+            
+            // Reporting Indexes
+            $table->index(['status', 'warehouse_id', 'item_type_id', 'item_variety_id'], 'idx_stock_bags_report');
+            $table->index('created_at');
+            
             $table->timestamps();
         });
     }

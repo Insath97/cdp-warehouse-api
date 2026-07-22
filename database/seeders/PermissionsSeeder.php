@@ -200,6 +200,9 @@ class PermissionsSeeder extends Seeder
             ['name' => 'BarcodeToken Index', 'group_name' => 'Barcode Token Management Permissions'],
             ['name' => 'BarcodeToken Create', 'group_name' => 'Barcode Token Management Permissions'],
             ['name' => 'BarcodeToken Verify', 'group_name' => 'Barcode Token Management Permissions'],
+
+            /* Inventory Reports Management */
+            ['name' => 'InventoryReport Index', 'group_name' => 'Inventory Report Management Permissions'],
         ];
 
         foreach ($permissions as $permission) {

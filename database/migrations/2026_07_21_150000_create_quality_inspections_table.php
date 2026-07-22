@@ -32,6 +32,10 @@ return new class extends Migration
 
             $table->foreignId('inspected_by')->constrained('users')->cascadeOnDelete();
             $table->dateTime('inspected_at');
+            
+            // Reporting Indexes
+            $table->index(['stock_bag_id', 'inspected_at', 'moisture_percentage', 'grade'], 'idx_inspections_report');
+            
             $table->timestamps();
         });
     }

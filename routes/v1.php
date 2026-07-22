@@ -26,6 +26,7 @@ use App\Http\Controllers\V1\BuyerController;
 use App\Http\Controllers\V1\InvoiceController;
 use App\Http\Controllers\V1\StockDispatchController;
 use App\Http\Controllers\V1\BarcodeTokenController;
+use App\Http\Controllers\V1\InventoryReportController;
 use Illuminate\Support\Facades\Route;
 
 /* public routes */
@@ -195,6 +196,14 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
         Route::get('{code}/verify', [BarcodeTokenController::class, 'verifyStatus']);
     });
     Route::apiResource('barcode-tokens', BarcodeTokenController::class)->except(['update', 'destroy']);
+
+    // Inventory Reports
+    Route::prefix('inventory-reports')->group(function () {
+        Route::get('balance', [InventoryReportController::class, 'balance']);
+        Route::get('valuation', [InventoryReportController::class, 'valuation']);
+        Route::get('aging', [InventoryReportController::class, 'aging']);
+        Route::get('alerts', [InventoryReportController::class, 'alerts']);
+    });
 
     // Activity Logs (Read-only: Get All and Get By ID)
     Route::prefix('activity-logs')->group(function () {
