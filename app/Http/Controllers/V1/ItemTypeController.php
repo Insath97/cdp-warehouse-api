@@ -50,6 +50,8 @@ class ItemTypeController extends Controller implements HasMiddleware
 
             $itemTypes = $query->orderBy('name', 'asc')->paginate($perPage);
 
+            $this->logActivity('INDEX', 'ItemType', 'Retrieved item types listing');
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Item types retrieved successfully',
@@ -103,6 +105,8 @@ class ItemTypeController extends Controller implements HasMiddleware
                     'message' => 'Item type not found',
                 ], 404);
             }
+
+            $this->logActivity('SHOW', 'ItemType', "Retrieved item type details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',

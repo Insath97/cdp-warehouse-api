@@ -54,6 +54,8 @@ class DistrictController extends Controller implements HasMiddleware
 
             $districts = $query->orderBy('name', 'asc')->paginate($perPage);
 
+            $this->logActivity('INDEX', 'District', 'Retrieved districts listing');
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Districts retrieved successfully',
@@ -107,6 +109,8 @@ class DistrictController extends Controller implements HasMiddleware
                     'message' => 'District not found',
                 ], 404);
             }
+
+            $this->logActivity('SHOW', 'District', "Retrieved district details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',

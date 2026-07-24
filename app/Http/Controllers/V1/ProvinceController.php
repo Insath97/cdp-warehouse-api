@@ -54,6 +54,8 @@ class ProvinceController extends Controller implements HasMiddleware
 
             $provinces = $query->orderBy('name', 'asc')->paginate($perPage);
 
+            $this->logActivity('INDEX', 'Province', 'Retrieved provinces listing');
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Provinces retrieved successfully',
@@ -107,6 +109,8 @@ class ProvinceController extends Controller implements HasMiddleware
                     'message' => 'Province not found',
                 ], 404);
             }
+
+            $this->logActivity('SHOW', 'Province', "Retrieved province details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',

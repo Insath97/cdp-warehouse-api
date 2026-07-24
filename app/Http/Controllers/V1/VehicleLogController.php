@@ -70,6 +70,8 @@ class VehicleLogController extends Controller implements HasMiddleware
 
             $logs = $query->orderBy('id', 'desc')->paginate($perPage);
 
+            $this->logActivity('INDEX', 'VehicleLog', 'Retrieved vehicle logs listing');
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Vehicle logs retrieved successfully',
@@ -173,6 +175,8 @@ class VehicleLogController extends Controller implements HasMiddleware
                     'message' => 'Vehicle log not found',
                 ], 404);
             }
+
+            $this->logActivity('SHOW', 'VehicleLog', "Retrieved vehicle log details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',

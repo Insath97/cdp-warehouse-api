@@ -87,6 +87,8 @@ class StockDispatchController extends Controller implements HasMiddleware
 
             $dispatches = $query->orderBy('id', 'desc')->paginate($perPage);
 
+            $this->logActivity('INDEX', 'StockDispatch', 'Retrieved stock dispatches listing');
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Stock dispatches retrieved successfully',
@@ -269,6 +271,8 @@ class StockDispatchController extends Controller implements HasMiddleware
                     'message' => 'Stock dispatch not found',
                 ], 404);
             }
+
+            $this->logActivity('SHOW', 'StockDispatch', "Retrieved stock dispatch details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',

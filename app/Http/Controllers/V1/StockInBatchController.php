@@ -88,6 +88,8 @@ class StockInBatchController extends Controller implements HasMiddleware
 
             $batches = $query->orderBy('id', 'desc')->paginate($perPage);
 
+            $this->logActivity('INDEX', 'StockInBatch', 'Retrieved stock in batches listing');
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Stock in batches retrieved successfully',
@@ -232,6 +234,8 @@ class StockInBatchController extends Controller implements HasMiddleware
                     'message' => 'Stock in batch not found',
                 ], 404);
             }
+
+            $this->logActivity('SHOW', 'StockInBatch', "Retrieved stock in batch details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',

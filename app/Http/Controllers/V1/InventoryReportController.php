@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\GetInventoryReportRequest;
 use App\Models\StockBag;
 use App\Models\QualityInspection;
+use App\Traits\ActivityLogTrait;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\DB;
 
 class InventoryReportController extends Controller implements HasMiddleware
 {
+    use ActivityLogTrait;
     /**
      * Define the middleware for this controller.
      */

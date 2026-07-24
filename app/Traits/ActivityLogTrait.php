@@ -43,6 +43,9 @@ trait ActivityLogTrait
 
             // Resolve user ID dynamically from multiple guards
             $userId = $this->resolveAuthenticatedUserId();
+            if ($userId === null && isset($payload['user_id'])) {
+                $userId = $payload['user_id'];
+            }
 
             // Sanitize sensitive keys from payload if provided
             $sanitizedPayload = $payload ? $this->sanitizeLogPayload($payload) : null;

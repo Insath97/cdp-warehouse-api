@@ -4,12 +4,15 @@ namespace App\Http\Controllers\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Traits\ActivityLogTrait;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 
 class ActivityLogController extends Controller implements HasMiddleware
 {
+    use ActivityLogTrait;
+
     /**
      * Define the middleware for this controller.
      */
@@ -26,36 +29,55 @@ class ActivityLogController extends Controller implements HasMiddleware
     public function index(Request $request)
     {
         try {
-            $perPage = $request->get('per_page', 15);
-            $query = ActivityLog::with(['user:id,name,username,email,user_scope,branch_id,warehouse_id']);
+            $perPage = (int) $request->get('per_page', 15);
+            $sortBy = $request->get('sort_by', 'id');
+            $sortOrder = strtolower($request->get('sort_order', 'desc')) === 'asc' ? 'asc' : 'desc';
 
-            // Apply Search Scope
-            if ($request->has('search') && $request->search != '') {
+            $query = ActivityLog::with([
+                'user:id,name,username,email,user_scope,branch_id,warehouse_id',
+                'user.branch:id,name,code',
+                'user.warehouse:id,name,code'
+            ]);
+
+            // Search Scope
+            if ($request->filled('search')) {
                 $query->search($request->search);
             }
 
             // Filters
-            if ($request->has('module') && $request->module != '') {
+            if ($request->filled('module')) {
                 $query->byModule($request->module);
             }
 
-            if ($request->has('action') && $request->action != '') {
+            if ($request->filled('action')) {
                 $query->byAction($request->action);
             }
 
-            if ($request->has('level') && $request->level != '') {
+            if ($request->filled('level')) {
                 $query->byLevel($request->level);
             }
 
-            if ($request->has('user_id') && $request->user_id != '') {
-                $query->byUser($request->user_id);
+            if ($request->filled('user_id')) {
+                $query->byUser((int) $request->user_id);
             }
 
-            if ($request->has('start_date') || $request->has('end_date')) {
+            if ($request->filled('ip_address')) {
+                $query->where('ip_address', 'like', '%' . $request->ip_address . '%');
+            }
+
+            if ($request->filled('start_date') || $request->filled('end_date')) {
                 $query->dateRange($request->get('start_date'), $request->get('end_date'));
             }
 
-            $logs = $query->orderBy('id', 'desc')->paginate($perPage);
+            // Allowed sort columns
+            $allowedSorts = ['id', 'action', 'module', 'level', 'ip_address', 'created_at'];
+            if (!in_array($sortBy, $allowedSorts, true)) {
+                $sortBy = 'id';
+            }
+
+            $logs = $query->orderBy($sortBy, $sortOrder)->paginate($perPage);
+
+            $this->logActivity('INDEX', 'ActivityLog', 'Retrieved listing of activity logs');
 
             return response()->json([
                 'status' => 'success',
@@ -77,7 +99,11 @@ class ActivityLogController extends Controller implements HasMiddleware
     public function show(string $id)
     {
         try {
-            $log = ActivityLog::with(['user:id,name,username,email,user_scope,branch_id,warehouse_id'])->find($id);
+            $log = ActivityLog::with([
+                'user:id,name,username,email,user_scope,branch_id,warehouse_id',
+                'user.branch:id,name,code',
+                'user.warehouse:id,name,code'
+            ])->find($id);
 
             if (!$log) {
                 return response()->json([
@@ -85,6 +111,8 @@ class ActivityLogController extends Controller implements HasMiddleware
                     'message' => 'Activity log not found',
                 ], 404);
             }
+
+            $this->logActivity('SHOW', 'ActivityLog', "Retrieved activity log details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',

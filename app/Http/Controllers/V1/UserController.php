@@ -70,6 +70,8 @@ class UserController extends Controller implements HasMiddleware
 
             $users = $query->orderBy('name', 'asc')->paginate($perPage);
 
+            $this->logActivity('INDEX', 'User', 'Retrieved users listing');
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Users retrieved successfully',
@@ -184,6 +186,8 @@ class UserController extends Controller implements HasMiddleware
                     'message' => 'User not found or access unauthorized',
                 ], 404);
             }
+
+            $this->logActivity('SHOW', 'User', "Retrieved user details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',

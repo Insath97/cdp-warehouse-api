@@ -78,6 +78,8 @@ class QualityInspectionController extends Controller implements HasMiddleware
 
             $inspections = $query->orderBy('id', 'desc')->paginate($perPage);
 
+            $this->logActivity('INDEX', 'QualityInspection', 'Retrieved quality inspections listing');
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Quality inspections retrieved successfully',
@@ -172,6 +174,8 @@ class QualityInspectionController extends Controller implements HasMiddleware
                     'message' => 'Quality inspection not found',
                 ], 404);
             }
+
+            $this->logActivity('SHOW', 'QualityInspection', "Retrieved quality inspection details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',

@@ -50,6 +50,8 @@ class DepartmentController extends Controller implements HasMiddleware
 
             $departments = $query->orderBy('name', 'asc')->paginate($perPage);
 
+            $this->logActivity('INDEX', 'Department', 'Retrieved departments listing');
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Departments retrieved successfully',
@@ -103,6 +105,8 @@ class DepartmentController extends Controller implements HasMiddleware
                     'message' => 'Department not found',
                 ], 404);
             }
+
+            $this->logActivity('SHOW', 'Department', "Retrieved department details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',

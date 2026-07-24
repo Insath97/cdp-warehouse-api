@@ -50,6 +50,8 @@ class GroupController extends Controller implements HasMiddleware
 
             $groups = $query->orderBy('name', 'asc')->paginate($perPage);
 
+            $this->logActivity('INDEX', 'Group', 'Retrieved groups listing');
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Groups retrieved successfully',
@@ -103,6 +105,8 @@ class GroupController extends Controller implements HasMiddleware
                     'message' => 'Group not found',
                 ], 404);
             }
+
+            $this->logActivity('SHOW', 'Group', "Retrieved group details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',

@@ -53,6 +53,8 @@ class SupplierController extends Controller implements HasMiddleware
 
             $suppliers = $query->orderBy('name', 'asc')->paginate($perPage);
 
+            $this->logActivity('INDEX', 'Supplier', 'Retrieved suppliers listing');
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Suppliers retrieved successfully',
@@ -132,6 +134,8 @@ class SupplierController extends Controller implements HasMiddleware
                     'message' => 'Supplier not found',
                 ], 404);
             }
+
+            $this->logActivity('SHOW', 'Supplier', "Retrieved supplier details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',

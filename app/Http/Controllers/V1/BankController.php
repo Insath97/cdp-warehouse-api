@@ -50,6 +50,8 @@ class BankController extends Controller implements HasMiddleware
 
             $banks = $query->orderBy('name', 'asc')->paginate($perPage);
 
+            $this->logActivity('INDEX', 'Bank', 'Retrieved bank listing');
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Banks retrieved successfully',
@@ -103,6 +105,8 @@ class BankController extends Controller implements HasMiddleware
                     'message' => 'Bank not found',
                 ], 404);
             }
+
+            $this->logActivity('SHOW', 'Bank', "Retrieved bank details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',

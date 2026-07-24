@@ -54,6 +54,8 @@ class WarehouseController extends Controller implements HasMiddleware
 
             $warehouses = $query->orderBy('name', 'asc')->paginate($perPage);
 
+            $this->logActivity('INDEX', 'Warehouse', 'Retrieved warehouses listing');
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Warehouses retrieved successfully',
@@ -108,6 +110,8 @@ class WarehouseController extends Controller implements HasMiddleware
                     'message' => 'Warehouse not found',
                 ], 404);
             }
+
+            $this->logActivity('SHOW', 'Warehouse', "Retrieved warehouse details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',

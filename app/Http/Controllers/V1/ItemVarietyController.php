@@ -56,6 +56,8 @@ class ItemVarietyController extends Controller implements HasMiddleware
 
             $varieties = $query->orderBy('name', 'asc')->paginate($perPage);
 
+            $this->logActivity('INDEX', 'ItemVariety', 'Retrieved item varieties listing');
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Item varieties retrieved successfully',
@@ -112,6 +114,8 @@ class ItemVarietyController extends Controller implements HasMiddleware
                     'message' => 'Item variety not found',
                 ], 404);
             }
+
+            $this->logActivity('SHOW', 'ItemVariety', "Retrieved item variety details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',

@@ -9,9 +9,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Traits\ActivityLogTrait;
 
 class AuthController extends Controller
 {
+    use ActivityLogTrait;
+
       /**
      * Admin Login
      * Only users with user_type = 'admin' can login here
@@ -78,6 +81,18 @@ class AuthController extends Controller
 
             $user->updateLastLogin($request->ip());
 
+            $this->logActivity(
+                'LOGIN',
+                'Auth',
+                "User {$user->name} ({$user->username}) logged in successfully",
+                [
+                    'user_id' => $user->id,
+                    'username' => $user->username,
+                    'email' => $user->email,
+                    'ip_address' => $request->ip(),
+                ]
+            );
+
             $cookie = cookie(
                 'auth_token',
                 $token,
@@ -135,6 +150,18 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         try {
+            $user = auth('api')->user();
+            $this->logActivity(
+                'LOGOUT',
+                'Auth',
+                $user ? "User {$user->name} ({$user->username}) logged out" : "User logged out",
+                [
+                    'user_id' => $user?->id,
+                    'username' => $user?->username,
+                    'ip_address' => $request->ip(),
+                ]
+            );
+
             // Logout the user (invalidates the token)
             Auth::guard('api')->logout();
 

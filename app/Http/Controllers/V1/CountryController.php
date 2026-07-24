@@ -46,6 +46,8 @@ class CountryController extends Controller implements HasMiddleware
 
             $countries = $query->orderBy('name', 'asc')->paginate($perPage);
 
+            $this->logActivity('INDEX', 'Country', 'Retrieved countries listing');
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Countries retrieved successfully',
@@ -99,6 +101,8 @@ class CountryController extends Controller implements HasMiddleware
                     'message' => 'Country not found',
                 ], 404);
             }
+
+            $this->logActivity('SHOW', 'Country', "Retrieved country details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',

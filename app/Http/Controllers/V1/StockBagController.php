@@ -167,6 +167,8 @@ class StockBagController extends Controller implements HasMiddleware
 
             $bags = $query->orderBy('id', 'desc')->paginate($perPage);
 
+            $this->logActivity('INDEX', 'StockBag', 'Retrieved stock bags listing');
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Stock bags retrieved successfully',
@@ -379,6 +381,8 @@ class StockBagController extends Controller implements HasMiddleware
                     ], 403);
                 }
             }
+
+            $this->logActivity('SHOW', 'StockBag', "Retrieved stock bag details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',

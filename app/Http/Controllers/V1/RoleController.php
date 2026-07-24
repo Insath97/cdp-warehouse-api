@@ -46,6 +46,8 @@ class RoleController extends Controller implements HasMiddleware
 
             $roles = $query->paginate($perPage);
 
+            $this->logActivity('INDEX', 'Role', 'Retrieved roles listing');
+
             if ($roles->isEmpty()) {
                 return response()->json([
                     'status' => 'success',
@@ -116,6 +118,8 @@ class RoleController extends Controller implements HasMiddleware
                     'data' => []
                 ], 404);
             }
+
+            $this->logActivity('SHOW', 'Role', "Retrieved role details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',

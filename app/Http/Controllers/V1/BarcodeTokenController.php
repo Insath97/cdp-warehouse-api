@@ -63,6 +63,8 @@ class BarcodeTokenController extends Controller implements HasMiddleware
 
             $batches = $query->orderBy('id', 'desc')->paginate($perPage);
 
+            $this->logActivity('INDEX', 'BarcodeTokenBatch', 'Retrieved barcode token batches listing');
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Barcode token batches retrieved successfully',
@@ -154,6 +156,8 @@ class BarcodeTokenController extends Controller implements HasMiddleware
                     'message' => 'Barcode token batch not found',
                 ], 404);
             }
+
+            $this->logActivity('SHOW', 'BarcodeTokenBatch', "Retrieved barcode token batch details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',

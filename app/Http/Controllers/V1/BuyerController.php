@@ -50,6 +50,8 @@ class BuyerController extends Controller implements HasMiddleware
 
             $buyers = $query->orderBy('name', 'asc')->paginate($perPage);
 
+            $this->logActivity('INDEX', 'Buyer', 'Retrieved buyers listing');
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Buyers retrieved successfully',
@@ -105,6 +107,8 @@ class BuyerController extends Controller implements HasMiddleware
                     'message' => 'Buyer not found',
                 ], 404);
             }
+
+            $this->logActivity('SHOW', 'Buyer', "Retrieved buyer details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',

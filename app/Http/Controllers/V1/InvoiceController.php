@@ -54,6 +54,8 @@ class InvoiceController extends Controller implements HasMiddleware
 
             $invoices = $query->orderBy('id', 'desc')->paginate($perPage);
 
+            $this->logActivity('INDEX', 'Invoice', 'Retrieved invoices listing');
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Invoices retrieved successfully',
@@ -110,6 +112,8 @@ class InvoiceController extends Controller implements HasMiddleware
                     'message' => 'Invoice not found',
                 ], 404);
             }
+
+            $this->logActivity('SHOW', 'Invoice', "Retrieved invoice details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',

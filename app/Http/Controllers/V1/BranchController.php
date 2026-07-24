@@ -51,6 +51,8 @@ class BranchController extends Controller implements HasMiddleware
 
             $branches = $query->paginate($perPage);
 
+            $this->logActivity('INDEX', 'Branch', 'Retrieved branches listing');
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Branches retrieved successfully',
@@ -99,6 +101,8 @@ class BranchController extends Controller implements HasMiddleware
                     'message' => 'Branch not found'
                 ], 404);
             }
+
+            $this->logActivity('SHOW', 'Branch', "Retrieved branch details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',

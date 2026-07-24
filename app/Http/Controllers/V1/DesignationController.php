@@ -56,6 +56,8 @@ class DesignationController extends Controller implements HasMiddleware
                                   ->orderBy('name', 'asc')
                                   ->paginate($perPage);
 
+            $this->logActivity('INDEX', 'Designation', 'Retrieved designations listing');
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Designations retrieved successfully',
@@ -109,6 +111,8 @@ class DesignationController extends Controller implements HasMiddleware
                     'message' => 'Designation not found',
                 ], 404);
             }
+
+            $this->logActivity('SHOW', 'Designation', "Retrieved designation details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',

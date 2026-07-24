@@ -5,6 +5,7 @@ namespace App\Http\Controllers\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreatePermissionRequest;
 use App\Http\Requests\UpdatePermissionRequest;
+use App\Traits\ActivityLogTrait;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -12,6 +13,7 @@ use Spatie\Permission\Models\Permission;
 
 class PermissionController extends Controller implements HasMiddleware
 {
+    use ActivityLogTrait;
     public static function middleware(): array
     {
         return [
@@ -54,6 +56,8 @@ class PermissionController extends Controller implements HasMiddleware
 
             $permissions = $query->paginate($perPage);
 
+            $this->logActivity('INDEX', 'Permission', 'Retrieved permissions listing');
+
             if ($permissions->isEmpty()) {
                 return response()->json([
                     'status' => 'success',
@@ -89,6 +93,8 @@ class PermissionController extends Controller implements HasMiddleware
 
             $permission = Permission::create($data);
 
+            $this->logActivity('CREATE', 'Permission', "Created permission: {$permission->name}", $data);
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Permission created successfully',
@@ -115,6 +121,8 @@ class PermissionController extends Controller implements HasMiddleware
                     'data' => []
                 ], 404);
             }
+
+            $this->logActivity('SHOW', 'Permission', "Retrieved permission details for ID: {$id}");
 
             return response()->json([
                 'status' => 'success',
@@ -155,6 +163,8 @@ class PermissionController extends Controller implements HasMiddleware
 
             $permission->update($data);
 
+            $this->logActivity('UPDATE', 'Permission', "Updated permission: {$permission->name}", $data);
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Permission updated successfully',
@@ -193,7 +203,10 @@ class PermissionController extends Controller implements HasMiddleware
                 ], 422);
             }
 
+            $permissionName = $permission->name;
             $permission->delete();
+
+            $this->logActivity('DELETE', 'Permission', "Deleted permission: {$permissionName}");
 
             return response()->json([
                 'status' => 'success',
