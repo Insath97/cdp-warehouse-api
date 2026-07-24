@@ -203,6 +203,9 @@ class PermissionsSeeder extends Seeder
 
             /* Inventory Reports Management */
             ['name' => 'InventoryReport Index', 'group_name' => 'Inventory Report Management Permissions'],
+
+            /* Database Management */
+            ['name' => 'Database Export', 'group_name' => 'Database Management Permissions'],
         ];
 
         foreach ($permissions as $permission) {

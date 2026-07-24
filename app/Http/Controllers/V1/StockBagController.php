@@ -309,7 +309,12 @@ class StockBagController extends Controller implements HasMiddleware
 
         $datePrefix = date('Ymd');
         $randomStr = strtoupper(substr(bin2hex(random_bytes(2)), 0, 4));
-        $bagCode = 'BAG-' . $datePrefix . '-' . str_pad($nextNum, 4, '0', STR_PAD_LEFT) . '-' . $randomStr;
+        $generatedBagCode = 'BAG-' . $datePrefix . '-' . str_pad($nextNum, 4, '0', STR_PAD_LEFT) . '-' . $randomStr;
+
+        // Support scanned identifiers or fall back to auto-generated codes
+        $bagCode = !empty($data['bag_code']) ? trim($data['bag_code']) : (!empty($data['barcode_code']) ? trim($data['barcode_code']) : $generatedBagCode);
+        $barcodeCode = !empty($data['barcode_code']) ? trim($data['barcode_code']) : $bagCode;
+        $qrCode = !empty($data['qr_code']) ? trim($data['qr_code']) : ('QR-' . $barcodeCode);
 
         $bag = StockBag::create([
             'bag_code' => $bagCode,
@@ -327,8 +332,8 @@ class StockBagController extends Controller implements HasMiddleware
             'total_price' => $totalPrice,
             'total_sales_amount' => $totalSalesAmount,
             'status' => $data['status'] ?? 'in_stock',
-            'barcode_code' => $bagCode,
-            'qr_code' => 'QR-' . $bagCode,
+            'barcode_code' => $barcodeCode,
+            'qr_code' => $qrCode,
             'location_id' => $data['location_id'] ?? null,
             'notes' => $data['notes'] ?? null,
             'created_by' => $authUser->id ?? 1,

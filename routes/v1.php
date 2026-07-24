@@ -27,6 +27,7 @@ use App\Http\Controllers\V1\InvoiceController;
 use App\Http\Controllers\V1\StockDispatchController;
 use App\Http\Controllers\V1\BarcodeTokenController;
 use App\Http\Controllers\V1\InventoryReportController;
+use App\Http\Controllers\V1\DatabaseController;
 use Illuminate\Support\Facades\Route;
 
 /* public routes */
@@ -210,4 +211,7 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
         Route::get('/', [ActivityLogController::class, 'index']);
         Route::get('{id}', [ActivityLogController::class, 'show']);
     });
+
+    // Database Export
+    Route::get('database/export', [DatabaseController::class, 'export']);
 });
