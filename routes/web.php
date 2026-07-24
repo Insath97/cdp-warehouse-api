@@ -3,13 +3,13 @@
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
-// Root endpoint
+// Root endpoint — API Landing Page
 Route::get('/', function () {
-    return response()->json([
-        'message' => 'CDP Connect web application API',
-        'version' => '1.0.0',
-        'health' => '/health-check',
-        'baseUrl' => env('APP_URL', 'http://localhost'),
+    return view('landing', [
+        'app_name'    => config('app.name'),
+        'app_version' => '1.0.0',
+        'app_url'     => config('app.url'),
+        'app_env'     => config('app.env'),
     ]);
 });
 
