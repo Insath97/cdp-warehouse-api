@@ -148,6 +148,7 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
 
     // Warehouses
     Route::prefix('warehouses')->group(function () {
+        Route::get('accessible', [WarehouseController::class, 'getAccessible']);
         Route::get('list', [WarehouseController::class, 'getActiveList']);
         Route::patch('{id}/toggle-status', [WarehouseController::class, 'toggleStatus']);
     });

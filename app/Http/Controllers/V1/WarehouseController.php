@@ -197,6 +197,52 @@ class WarehouseController extends Controller implements HasMiddleware
     }
 
     /**
+     * Get warehouses accessible by the logged-in user based on their scope.
+     */
+    public function getAccessible(Request $request)
+    {
+        try {
+            $query = Warehouse::with('branch');
+
+            $authUser = auth('api')->user();
+            if ($authUser) {
+                $accessibleWarehouseIds = $authUser->getAccessibleWarehouseIds();
+                if (is_array($accessibleWarehouseIds)) {
+                    $query->whereIn('id', $accessibleWarehouseIds);
+                }
+            }
+
+            if ($request->has('branch_id') && $request->branch_id != '') {
+                $query->where('branch_id', $request->branch_id);
+            }
+
+            $warehouses = $query->orderBy('name', 'asc')->get();
+
+            if ($warehouses->isEmpty()) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'No accessible warehouses found',
+                    'data' => [],
+                ], 200);
+            }
+
+            $this->logActivity('ACCESSIBLE', 'Warehouse', 'Retrieved accessible warehouses for user');
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Accessible warehouses retrieved successfully',
+                'data' => $warehouses,
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retrieve accessible warehouses',
+                'error' => config('app.debug') ? $th->getMessage() : 'Internal server error',
+            ], 500);
+        }
+    }
+
+    /**
      * Get a lightweight list of active warehouses (for dropdowns).
      */
     public function getActiveList(Request $request)
