@@ -30,6 +30,7 @@ use App\Http\Controllers\V1\InventoryReportController;
 use App\Http\Controllers\V1\DatabaseController;
 use App\Http\Controllers\V1\DashboardController;
 use App\Http\Controllers\V1\ImportController;
+use App\Http\Controllers\V1\SmsController;
 use Illuminate\Support\Facades\Route;
 
 /* public routes */
@@ -228,6 +229,14 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
         Route::get('catalog', [ImportController::class, 'index']);
         Route::get('{table}/template', [ImportController::class, 'downloadTemplate']);
         Route::post('{table}', [ImportController::class, 'import']);
+    });
+
+    // Dialog SMS Gateway
+    Route::prefix('sms')->group(function () {
+        Route::get('logs', [SmsController::class, 'index']);
+        Route::get('logs/{id}', [SmsController::class, 'show']);
+        Route::post('send', [SmsController::class, 'send']);
+        Route::get('balance', [SmsController::class, 'balance']);
     });
 
     // Database Export

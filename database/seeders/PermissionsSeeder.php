@@ -211,6 +211,11 @@ class PermissionsSeeder extends Seeder
             ['name' => 'Import Index', 'group_name' => 'Bulk Import Management Permissions'],
             ['name' => 'Bulk Import', 'group_name' => 'Bulk Import Management Permissions'],
 
+            /* Dialog SMS Gateway */
+            ['name' => 'Sms Index', 'group_name' => 'SMS Gateway Management Permissions'],
+            ['name' => 'Sms Show', 'group_name' => 'SMS Gateway Management Permissions'],
+            ['name' => 'Sms Send', 'group_name' => 'SMS Gateway Management Permissions'],
+
             /* Database Management */
             ['name' => 'Database Export', 'group_name' => 'Database Management Permissions'],
         ];
