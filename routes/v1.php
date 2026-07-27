@@ -28,6 +28,7 @@ use App\Http\Controllers\V1\StockDispatchController;
 use App\Http\Controllers\V1\BarcodeTokenController;
 use App\Http\Controllers\V1\InventoryReportController;
 use App\Http\Controllers\V1\DatabaseController;
+use App\Http\Controllers\V1\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 /* public routes */
@@ -211,6 +212,13 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
     Route::prefix('activity-logs')->group(function () {
         Route::get('/', [ActivityLogController::class, 'index']);
         Route::get('{id}', [ActivityLogController::class, 'show']);
+    });
+
+    // Executive Dashboard & Analytics
+    Route::prefix('dashboard')->group(function () {
+        Route::get('summary', [DashboardController::class, 'summary']);
+        Route::get('analytics', [DashboardController::class, 'analytics']);
+        Route::get('operational', [DashboardController::class, 'operational']);
     });
 
     // Database Export
