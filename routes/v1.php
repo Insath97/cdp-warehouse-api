@@ -29,6 +29,7 @@ use App\Http\Controllers\V1\BarcodeTokenController;
 use App\Http\Controllers\V1\InventoryReportController;
 use App\Http\Controllers\V1\DatabaseController;
 use App\Http\Controllers\V1\DashboardController;
+use App\Http\Controllers\V1\ImportController;
 use Illuminate\Support\Facades\Route;
 
 /* public routes */
@@ -219,6 +220,14 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
         Route::get('summary', [DashboardController::class, 'summary']);
         Route::get('analytics', [DashboardController::class, 'analytics']);
         Route::get('operational', [DashboardController::class, 'operational']);
+    });
+
+    // Bulk Import Engine & Template Generator
+    Route::prefix('import')->group(function () {
+        Route::get('tables', [ImportController::class, 'listTables']);
+        Route::get('catalog', [ImportController::class, 'index']);
+        Route::get('{table}/template', [ImportController::class, 'downloadTemplate']);
+        Route::post('{table}', [ImportController::class, 'import']);
     });
 
     // Database Export

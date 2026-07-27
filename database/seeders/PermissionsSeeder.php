@@ -207,6 +207,10 @@ class PermissionsSeeder extends Seeder
             /* Executive Dashboard Management */
             ['name' => 'Dashboard Index', 'group_name' => 'Executive Dashboard Permissions'],
 
+            /* Bulk Import Management */
+            ['name' => 'Import Index', 'group_name' => 'Bulk Import Management Permissions'],
+            ['name' => 'Bulk Import', 'group_name' => 'Bulk Import Management Permissions'],
+
             /* Database Management */
             ['name' => 'Database Export', 'group_name' => 'Database Management Permissions'],
         ];
