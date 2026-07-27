@@ -32,10 +32,13 @@ class CreateStockDispatchRequest extends FormRequest
             'warehouse_id' => 'sometimes|integer|exists:warehouses,id',
             'branch_id' => 'sometimes|integer|exists:branches,id',
             
-            // Dispatch Items validation
+            // Dispatch Items validation (supports stock_bag_id, barcode_code, qr_code, or bag_code)
             'items' => 'required|array|min:1',
-            'items.*.stock_bag_id' => 'required|integer|exists:stock_bags,id',
-            'items.*.selling_price' => 'required|numeric|min:0',
+            'items.*.stock_bag_id' => 'nullable|integer|exists:stock_bags,id',
+            'items.*.barcode_code' => 'nullable|string|max:100',
+            'items.*.qr_code'      => 'nullable|string|max:100',
+            'items.*.bag_code'     => 'nullable|string|max:100',
+            'items.*.selling_price' => 'nullable|numeric|min:0',
             'items.*.notes' => 'nullable|string',
             
             // Nested Invoice validation (optional)
@@ -56,15 +59,24 @@ class CreateStockDispatchRequest extends FormRequest
         $validator->after(function ($validator) {
             $items = $this->input('items', []);
             if (is_array($items)) {
-                $bagIds = [];
+                $scannedIdentifiers = [];
                 foreach ($items as $index => $item) {
-                    if (isset($item['stock_bag_id'])) {
-                        $bagId = $item['stock_bag_id'];
-                        if (in_array($bagId, $bagIds)) {
-                            $validator->errors()->add("items.{$index}.stock_bag_id", "The stock bag ID {$bagId} is duplicated in the items list.");
-                        } else {
-                            $bagIds[] = $bagId;
-                        }
+                    $hasIdentifier = !empty($item['stock_bag_id']) ||
+                                     !empty($item['barcode_code']) ||
+                                     !empty($item['qr_code']) ||
+                                     !empty($item['bag_code']);
+
+                    if (!$hasIdentifier) {
+                        $validator->errors()->add("items.{$index}", "Item at index {$index} must have a valid stock_bag_id, barcode_code, qr_code, or bag_code.");
+                        continue;
+                    }
+
+                    // Check duplicate scan
+                    $identifier = $item['stock_bag_id'] ?? $item['barcode_code'] ?? $item['qr_code'] ?? $item['bag_code'];
+                    if (in_array($identifier, $scannedIdentifiers)) {
+                        $validator->errors()->add("items.{$index}", "The bag identifier '{$identifier}' is duplicated in the dispatch items list.");
+                    } else {
+                        $scannedIdentifiers[] = $identifier;
                     }
                 }
             }

@@ -126,32 +126,39 @@ class StockDispatchController extends Controller implements HasMiddleware
                 $itemsData = $validated['items'];
                 $invoiceData = $validated['invoice'] ?? [];
 
-                // 1. Gather all Bag IDs and retrieve their details
-                $bagIds = collect($itemsData)->pluck('stock_bag_id')->toArray();
-                $bags = StockBag::whereIn('id', $bagIds)->get();
+                // 1. Resolve each StockBag by stock_bag_id, barcode_code, qr_code, or bag_code
+                $processedItems = [];
+                $totalWeight = 0;
+                $totalSalesAmount = 0;
 
-                // Validate bag status and warehouse
-                foreach ($bags as $bag) {
+                foreach ($itemsData as $index => $itemInput) {
+                    $bag = null;
+                    if (!empty($itemInput['stock_bag_id'])) {
+                        $bag = StockBag::find($itemInput['stock_bag_id']);
+                    } elseif (!empty($itemInput['barcode_code'])) {
+                        $bag = StockBag::where('barcode_code', $itemInput['barcode_code'])->first();
+                    } elseif (!empty($itemInput['qr_code'])) {
+                        $bag = StockBag::where('qr_code', $itemInput['qr_code'])->first();
+                    } elseif (!empty($itemInput['bag_code'])) {
+                        $bag = StockBag::where('bag_code', $itemInput['bag_code'])->first();
+                    }
+
+                    if (!$bag) {
+                        $identifier = $itemInput['stock_bag_id'] ?? $itemInput['barcode_code'] ?? $itemInput['qr_code'] ?? $itemInput['bag_code'] ?? "#{$index}";
+                        throw new \Exception("Could not find Stock Bag matching identifier: {$identifier}");
+                    }
+
                     if ($bag->status !== 'in_stock') {
-                        throw new \Exception("Stock Bag ID {$bag->id} ({$bag->bag_code}) is not in stock. Status is: {$bag->status}");
+                        throw new \Exception("Stock Bag ID {$bag->id} ({$bag->bag_code}) is not in stock. Current status is: {$bag->status}");
                     }
                     if ($bag->warehouse_id != $warehouseId) {
                         throw new \Exception("Stock Bag ID {$bag->id} ({$bag->bag_code}) does not belong to warehouse ID {$warehouseId}.");
                     }
-                }
 
-                // Match request prices with retrieved bags
-                $itemsPriceMap = collect($itemsData)->keyBy('stock_bag_id');
+                    $sellingPrice = isset($itemInput['selling_price'])
+                        ? (float) $itemInput['selling_price']
+                        : ((float) ($bag->selling_price > 0 ? $bag->selling_price : $bag->unit_price));
 
-                $totalBags = count($itemsData);
-                $totalWeight = 0;
-                $totalSalesAmount = 0;
-
-                $processedItems = [];
-
-                foreach ($bags as $bag) {
-                    $itemInput = $itemsPriceMap[$bag->id];
-                    $sellingPrice = (float) $itemInput['selling_price'];
                     $bagWeight = (float) $bag->bag_weight;
                     $itemTotal = $bagWeight * $sellingPrice;
 
@@ -166,6 +173,8 @@ class StockDispatchController extends Controller implements HasMiddleware
                         'created_by' => $userId,
                     ];
                 }
+
+                $totalBags = count($processedItems);
 
                 // 2. Create the Dispatch Master
                 $dispatch = StockDispatch::create([

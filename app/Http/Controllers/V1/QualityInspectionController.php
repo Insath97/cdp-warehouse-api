@@ -105,24 +105,37 @@ class QualityInspectionController extends Controller implements HasMiddleware
             $validated['inspected_by'] = auth('api')->id() ?? auth()->id() ?? 1;
             $validated['inspected_at'] = $validated['inspected_at'] ?? now();
 
+            // Automatically resolve StockBag by barcode_code, qr_code, bag_code, or stock_bag_id
+            $bag = null;
+            if (!empty($validated['stock_bag_id'])) {
+                $bag = StockBag::find($validated['stock_bag_id']);
+            } elseif (!empty($validated['barcode_code'])) {
+                $bag = StockBag::where('barcode_code', $validated['barcode_code'])->first();
+            } elseif (!empty($validated['qr_code'])) {
+                $bag = StockBag::where('qr_code', $validated['qr_code'])->first();
+            } elseif (!empty($validated['bag_code'])) {
+                $bag = StockBag::where('bag_code', $validated['bag_code'])->first();
+            }
+
+            if ($bag) {
+                $validated['stock_bag_id'] = $bag->id;
+                $validated['item_variety_id'] = $validated['item_variety_id'] ?? $bag->item_variety_id;
+                $validated['item_type_id'] = $validated['item_type_id'] ?? $bag->item_type_id;
+                $validated['stock_in_batch_id'] = $validated['stock_in_batch_id'] ?? $bag->stock_in_batch_id;
+                $validated['original_weight'] = $validated['original_weight'] ?? $bag->bag_weight;
+            }
+
             // Auto fetch item_type_id if missing
             if (empty($validated['item_type_id']) && !empty($validated['item_variety_id'])) {
                 $variety = ItemVariety::find($validated['item_variety_id']);
                 $validated['item_type_id'] = $variety->item_type_id ?? null;
             }
 
-            // Auto fetch original_weight if missing
-            if (!isset($validated['original_weight'])) {
-                if (!empty($validated['stock_bag_id'])) {
-                    $bag = StockBag::find($validated['stock_bag_id']);
-                    if ($bag) {
-                        $validated['original_weight'] = $bag->bag_weight;
-                    }
-                } elseif (!empty($validated['stock_in_batch_id'])) {
-                    $batch = StockInBatch::find($validated['stock_in_batch_id']);
-                    if ($batch) {
-                        $validated['original_weight'] = $batch->net_weight;
-                    }
+            // Auto fetch original_weight if missing for batch
+            if (!isset($validated['original_weight']) && !empty($validated['stock_in_batch_id'])) {
+                $batch = StockInBatch::find($validated['stock_in_batch_id']);
+                if ($batch) {
+                    $validated['original_weight'] = $batch->net_weight;
                 }
             }
 

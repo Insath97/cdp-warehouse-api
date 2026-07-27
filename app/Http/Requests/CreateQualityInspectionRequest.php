@@ -23,19 +23,40 @@ class CreateQualityInspectionRequest extends FormRequest
     {
         return [
             'stock_in_batch_id' => 'nullable|exists:stock_in_batches,id',
-            'stock_bag_id' => 'nullable|exists:stock_bags,id',
-            'item_variety_id' => 'required|exists:item_varieties,id',
-            'item_type_id' => 'nullable|exists:item_types,id',
-            'original_weight' => 'nullable|numeric|min:0',
-            'current_weight' => 'nullable|numeric|min:0',
+            'stock_bag_id'      => 'nullable|exists:stock_bags,id',
+            'barcode_code'      => 'nullable|string|max:100',
+            'qr_code'           => 'nullable|string|max:100',
+            'bag_code'          => 'nullable|string|max:100',
+            'item_variety_id'   => 'nullable|exists:item_varieties,id',
+            'item_type_id'      => 'nullable|exists:item_types,id',
+            'original_weight'   => 'nullable|numeric|min:0',
+            'current_weight'    => 'nullable|numeric|min:0',
             'moisture_percentage' => 'nullable|numeric|min:0|max:100',
-            'grade' => 'nullable|string|in:A,B,C,reject',
+            'grade'             => 'nullable|string|in:A,B,C,reject',
             'broken_percentage' => 'nullable|numeric|min:0|max:100',
-            'colour_quality' => 'nullable|string|in:good,acceptable,poor',
-            'inspection_result' => 'nullable|string|in:approved,conditional,rejected',
-            'remarks' => 'nullable|string',
-            'inspected_at' => 'nullable|date',
+            'colour_quality'    => 'nullable|string|in:good,acceptable,poor',
+            'inspection_result' => 'nullable|string|in:approved,conditional,rejected,passed,failed',
+            'remarks'           => 'nullable|string',
+            'inspected_at'      => 'nullable|date',
         ];
+    }
+
+    /**
+     * Configure the validator instance.
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $hasBagOrBatch = $this->filled('stock_bag_id') ||
+                             $this->filled('barcode_code') ||
+                             $this->filled('qr_code') ||
+                             $this->filled('bag_code') ||
+                             $this->filled('stock_in_batch_id');
+
+            if (!$hasBagOrBatch) {
+                $validator->errors()->add('stock_bag_id', 'Please provide a valid bag ID, scanned Barcode, QR code, bag code, or batch ID.');
+            }
+        });
     }
 
     /**
