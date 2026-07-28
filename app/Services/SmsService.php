@@ -71,6 +71,16 @@ class SmsService
     }
 
     /**
+     * Send Password Reset OTP code via SMS.
+     */
+    public function sendOtpSms(string $phoneNumber, string $otpCode): bool
+    {
+        $appName = config('app.name', 'CDP Warehouse');
+        $message = "{$appName}: Your password reset verification code is: {$otpCode}. Valid for 10 minutes. Do not share this code.";
+        return $this->sendSms($phoneNumber, $message);
+    }
+
+    /**
      * Send SMS via Dialog Gateway and record SmsLog
      */
     public function sendSms($numbers, string $message, int $paymentMethod = 0): bool

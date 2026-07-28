@@ -233,11 +233,16 @@ class UserController extends Controller implements HasMiddleware
                 $data['user_scope'] = 'warehouse';
             }
 
-            // Handle password update if provided
+            // Handle password update if provided by admin
             if (!empty($data['password'])) {
                 $data['password'] = Hash::make($data['password']);
+                $data['password_change_count'] = 0; // Reset self-change count when admin changes password
             } else {
                 unset($data['password']);
+            }
+
+            if (isset($data['password_change_count'])) {
+                $data['password_change_count'] = (int) $data['password_change_count'];
             }
 
             $roles = $data['roles'] ?? null;

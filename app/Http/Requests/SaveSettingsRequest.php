@@ -5,38 +5,35 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Auth;
 
-class UpdateUserRequest extends FormRequest
+class SaveSettingsRequest extends FormRequest
 {
+    /**
+     * Determine if the user is authorized to make this request.
+     */
     public function authorize(): bool
     {
-        return true;
+        return Auth::guard('api')->check();
     }
 
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
     public function rules(): array
     {
-        $id = $this->route('user') ?? $this->route('id');
-
         return [
-            'name' => 'sometimes|required|string|max:255',
-            'username' => 'sometimes|required|string|max:100|unique:users,username,' . $id,
-            'email' => 'nullable|email|max:255|unique:users,email,' . $id,
-            'phone' => 'nullable|string|max:20',
-            'password' => 'nullable|string|min:6',
-            'user_scope' => 'sometimes|required|in:global,branch,warehouse',
-            'branch_id' => 'nullable|exists:branches,id',
-            'warehouse_id' => 'nullable|exists:warehouses,id',
-            'is_active' => 'sometimes|boolean',
-            'can_login' => 'sometimes|boolean',
-            'password_change_count' => 'sometimes|integer|min:0',
-            'roles' => 'sometimes|array',
-            'roles.*' => 'string',
+            'settings' => 'required|array',
+            'settings.*' => 'nullable|string',
         ];
     }
 
     protected function failedValidation(Validator $validator)
     {
         $errorMessages = $validator->errors();
+
         $fieldErrors = collect($errorMessages->getMessages())->map(function ($messages, $field) {
             return [
                 'field' => $field,
@@ -49,6 +46,7 @@ class UpdateUserRequest extends FormRequest
             : 'There is an issue with the input for ' . $fieldErrors->first()['field'] . '.';
 
         throw new HttpResponseException(response()->json([
+            'status' => 'error',
             'message' => $message,
             'errors' => $fieldErrors,
         ], 422));

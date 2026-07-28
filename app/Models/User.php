@@ -31,6 +31,7 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         'warehouse_id',
         'is_active',
         'can_login',
+        'password_change_count',
         'last_login_at',
         'last_login_ip',
         'email_verified_at',
@@ -110,6 +111,18 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     public function isWarehouseScoped(): bool
     {
         return $this->user_scope === 'warehouse';
+    }
+
+    /**
+     * Check if user has reached self-service password change limit.
+     */
+    public function hasReachedPasswordChangeLimit(): bool
+    {
+        $limit = (int) SystemSetting::get('staff_password_change_limit', 3);
+        if ($limit <= 0) {
+            return false;
+        }
+        return $this->password_change_count >= $limit;
     }
 
     /**

@@ -32,12 +32,16 @@ use App\Http\Controllers\V1\DatabaseController;
 use App\Http\Controllers\V1\DashboardController;
 use App\Http\Controllers\V1\ImportController;
 use App\Http\Controllers\V1\SmsController;
+use App\Http\Controllers\V1\SettingController;
 use Illuminate\Support\Facades\Route;
 
 /* public routes */
 
 Route::prefix('v1')->group(function () {
     Route::post('login', [AuthController::class, 'login'])->middleware('throttle:auth');
+    Route::post('forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:auth');
+    Route::post('verify-otp', [AuthController::class, 'verifyOtp'])->middleware('throttle:auth');
+    Route::post('reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:auth');
 });
 
 /* protected routes */
@@ -244,6 +248,12 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
         Route::get('logs/{id}', [SmsController::class, 'show']);
         Route::post('send', [SmsController::class, 'send']);
         Route::get('balance', [SmsController::class, 'balance']);
+    });
+
+    // System Settings
+    Route::prefix('settings')->group(function () {
+        Route::get('/', [SettingController::class, 'index']);
+        Route::post('/', [SettingController::class, 'update']);
     });
 
     // Database Export
