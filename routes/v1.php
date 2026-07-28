@@ -37,11 +37,11 @@ use Illuminate\Support\Facades\Route;
 /* public routes */
 
 Route::prefix('v1')->group(function () {
-    Route::post('login', [AuthController::class, 'login']);
+    Route::post('login', [AuthController::class, 'login'])->middleware('throttle:auth');
 });
 
 /* protected routes */
-Route::middleware(['auth:api'])->prefix('v1')->group(function () {
+Route::middleware(['auth:api', 'throttle:api'])->prefix('v1')->group(function () {
 
     Route::post('logout', [AuthController::class, 'logout']);
     Route::get('me', [AuthController::class, 'me']);
@@ -231,7 +231,7 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
     });
 
     // Bulk Import Engine & Template Generator
-    Route::prefix('import')->group(function () {
+    Route::prefix('import')->middleware('throttle:uploads')->group(function () {
         Route::get('tables', [ImportController::class, 'listTables']);
         Route::get('catalog', [ImportController::class, 'index']);
         Route::get('{table}/template', [ImportController::class, 'downloadTemplate']);
