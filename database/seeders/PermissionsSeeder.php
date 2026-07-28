@@ -156,6 +156,11 @@ class PermissionsSeeder extends Seeder
             ['name' => 'StockInBatch Delete', 'group_name' => 'Stock In Batch Management Permissions'],
             ['name' => 'StockInBatch Update Status', 'group_name' => 'Stock In Batch Management Permissions'],
 
+            /* Receipt Management */
+            ['name' => 'Receipt Index', 'group_name' => 'Receipt Management Permissions'],
+            ['name' => 'Receipt Show', 'group_name' => 'Receipt Management Permissions'],
+            ['name' => 'Receipt Update Status', 'group_name' => 'Receipt Management Permissions'],
+
             /* Stock Bag Management */
             ['name' => 'StockBag Index', 'group_name' => 'Stock Bag Management Permissions'],
             ['name' => 'StockBag List', 'group_name' => 'Stock Bag Management Permissions'],

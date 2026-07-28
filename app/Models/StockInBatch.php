@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class StockInBatch extends Model
 {
@@ -78,6 +79,14 @@ class StockInBatch extends Model
     public function qualityInspections(): HasMany
     {
         return $this->hasMany(QualityInspection::class, 'stock_in_batch_id');
+    }
+
+    /**
+     * Relationship with Receipt.
+     */
+    public function receipt(): HasOne
+    {
+        return $this->hasOne(Receipt::class, 'stock_in_batch_id');
     }
 
     /**

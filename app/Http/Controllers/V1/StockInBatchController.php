@@ -5,6 +5,7 @@ namespace App\Http\Controllers\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateStockInBatchRequest;
 use App\Http\Requests\UpdateStockInBatchRequest;
+use App\Models\Receipt;
 use App\Models\StockInBatch;
 use App\Models\StockInBatchItem;
 use App\Traits\ActivityLogTrait;
@@ -176,6 +177,26 @@ class StockInBatchController extends Controller implements HasMiddleware
                     $stockInBatch->items()->create($pItem);
                 }
 
+                // Automatically generate and save pending Receipt for this batch
+                $nextReceiptId = (Receipt::max('id') ?? 0) + 1;
+                $receiptNumber = 'RCP-' . date('Ymd') . '-' . str_pad($nextReceiptId, 5, '0', STR_PAD_LEFT);
+
+                $stockInBatch->load('warehouse:id,branch_id');
+
+                Receipt::create([
+                    'receipt_number' => $receiptNumber,
+                    'stock_in_batch_id' => $stockInBatch->id,
+                    'supplier_id' => $stockInBatch->supplier_id,
+                    'warehouse_id' => $stockInBatch->warehouse_id,
+                    'branch_id' => $stockInBatch->warehouse->branch_id ?? ($authUser->branch_id ?? null),
+                    'receipt_date' => $stockInBatch->received_date ?? now(),
+                    'total_bags' => $stockInBatch->total_bags,
+                    'total_weight' => $stockInBatch->net_weight,
+                    'total_amount' => $stockInBatch->total_amount,
+                    'status' => 'pending',
+                    'created_by' => $validated['created_by'],
+                ]);
+
                 return $stockInBatch;
             });
 
@@ -195,6 +216,7 @@ class StockInBatchController extends Controller implements HasMiddleware
                 'items.itemType:id,name,code',
                 'items.itemVariety:id,name,code',
                 'creator:id,name,username,email,user_scope,branch_id,warehouse_id',
+                'receipt',
             ]);
 
             return response()->json([
@@ -321,6 +343,21 @@ class StockInBatchController extends Controller implements HasMiddleware
                 }
 
                 $batch->update($validated);
+
+                // Synchronize associated Receipt if it exists
+                $receipt = Receipt::where('stock_in_batch_id', $batch->id)->first();
+                if ($receipt) {
+                    $batch->load('warehouse:id,branch_id');
+                    $receipt->update([
+                        'supplier_id' => $batch->supplier_id,
+                        'warehouse_id' => $batch->warehouse_id,
+                        'branch_id' => $batch->warehouse->branch_id ?? $receipt->branch_id,
+                        'receipt_date' => $batch->received_date ?? $receipt->receipt_date,
+                        'total_bags' => $batch->total_bags,
+                        'total_weight' => $batch->net_weight,
+                        'total_amount' => $batch->total_amount,
+                    ]);
+                }
             });
 
             // Log activity
@@ -338,6 +375,7 @@ class StockInBatchController extends Controller implements HasMiddleware
                 'items.itemType:id,name,code',
                 'items.itemVariety:id,name,code',
                 'updater:id,name',
+                'receipt',
             ]);
 
             return response()->json([
