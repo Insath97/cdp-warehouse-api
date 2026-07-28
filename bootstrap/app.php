@@ -9,6 +9,8 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
+use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SanitizeInput;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -24,6 +26,17 @@ return Application::configure(basePath: dirname(__DIR__))
             'jwt.refresh' => \PHPOpenSourceSaver\JWTAuth\Http\Middleware\RefreshToken::class,
             'permission' => PermissionMiddleware::class,
             'role' => RoleMiddleware::class,
+            'security.headers' => SecurityHeaders::class,
+            'sanitize.input' => SanitizeInput::class,
+        ]);
+
+        /* API Throttling */
+        $middleware->throttleApi('api');
+
+        /* Append security middleware to API route group */
+        $middleware->api(append: [
+            SanitizeInput::class,
+            SecurityHeaders::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
