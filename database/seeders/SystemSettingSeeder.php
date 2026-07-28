@@ -12,10 +12,11 @@ class SystemSettingSeeder extends Seeder
      */
     public function run(): void
     {
+        SystemSetting::where('key', 'sms_notifications_enabled')->delete();
+
         $settings = [
             'otp_expiry_minutes' => '10',
             'staff_password_change_limit' => '3',
-            'sms_notifications_enabled' => '1',
         ];
 
         foreach ($settings as $key => $value) {

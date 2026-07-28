@@ -5,6 +5,8 @@ namespace App\Http\Controllers\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateStockBagRequest;
 use App\Http\Requests\UpdateStockBagRequest;
+use App\Models\BarcodeToken;
+use App\Models\ItemVariety;
 use App\Models\StockBag;
 use App\Models\StockInBatch;
 use App\Models\StockInBatchItem;
@@ -47,7 +49,7 @@ class StockBagController extends Controller implements HasMiddleware
                 'items.itemVariety:id,name,code',
             ])->find($batchId);
 
-            if (!$batch) {
+            if (! $batch) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Stock in batch not found',
@@ -58,7 +60,7 @@ class StockBagController extends Controller implements HasMiddleware
             $authUser = auth('api')->user();
             if ($authUser) {
                 $accessibleWarehouseIds = $authUser->getAccessibleWarehouseIds();
-                if (is_array($accessibleWarehouseIds) && !in_array($batch->warehouse_id, $accessibleWarehouseIds)) {
+                if (is_array($accessibleWarehouseIds) && ! in_array($batch->warehouse_id, $accessibleWarehouseIds)) {
                     return response()->json([
                         'status' => 'error',
                         'message' => 'Unauthorized access. You do not have permission to manage bags for this warehouse.',
@@ -194,7 +196,7 @@ class StockBagController extends Controller implements HasMiddleware
 
             $batch = StockInBatch::with('warehouse')->find($validated['stock_in_batch_id']);
 
-            if (!$batch) {
+            if (! $batch) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Stock in batch not found',
@@ -205,7 +207,7 @@ class StockBagController extends Controller implements HasMiddleware
             $authUser = auth('api')->user();
             if ($authUser) {
                 $accessibleWarehouseIds = $authUser->getAccessibleWarehouseIds();
-                if (is_array($accessibleWarehouseIds) && !in_array($batch->warehouse_id, $accessibleWarehouseIds)) {
+                if (is_array($accessibleWarehouseIds) && ! in_array($batch->warehouse_id, $accessibleWarehouseIds)) {
                     return response()->json([
                         'status' => 'error',
                         'message' => 'Unauthorized access. You cannot store bags for this warehouse.',
@@ -255,13 +257,13 @@ class StockBagController extends Controller implements HasMiddleware
             $this->logActivity(
                 'CREATE',
                 'StockBag',
-                "Registered " . count($createdBags) . " bag(s) for batch: {$batch->batch_number}",
+                'Registered '.count($createdBags)." bag(s) for batch: {$batch->batch_number}",
                 $request->validated()
             );
 
             return response()->json([
                 'status' => 'success',
-                'message' => count($createdBags) . ' stock bag(s) created successfully',
+                'message' => count($createdBags).' stock bag(s) created successfully',
                 'data' => count($createdBags) === 1 ? $createdBags[0] : $createdBags,
             ], 201);
         } catch (\Throwable $th) {
@@ -282,7 +284,7 @@ class StockBagController extends Controller implements HasMiddleware
         $batchItemId = $data['stock_in_batch_item_id'] ?? null;
 
         // Auto-find item_type_id and batch_item_id if missing
-        if (!$batchItemId || !isset($data['item_type_id'])) {
+        if (! $batchItemId || ! isset($data['item_type_id'])) {
             $batchItem = StockInBatchItem::where('stock_in_batch_id', $batch->id)
                 ->where('item_variety_id', $itemVarietyId)
                 ->first();
@@ -291,7 +293,7 @@ class StockBagController extends Controller implements HasMiddleware
                 $batchItemId = $batchItemId ?? $batchItem->id;
                 $itemTypeId = $batchItem->item_type_id;
             } else {
-                $variety = \App\Models\ItemVariety::find($itemVarietyId);
+                $variety = ItemVariety::find($itemVarietyId);
                 $itemTypeId = $variety->item_type_id ?? $data['item_type_id'] ?? 1;
             }
         } else {
@@ -309,12 +311,12 @@ class StockBagController extends Controller implements HasMiddleware
 
         $datePrefix = date('Ymd');
         $randomStr = strtoupper(substr(bin2hex(random_bytes(2)), 0, 4));
-        $generatedBagCode = 'BAG-' . $datePrefix . '-' . str_pad($nextNum, 4, '0', STR_PAD_LEFT) . '-' . $randomStr;
+        $generatedBagCode = 'BAG-'.$datePrefix.'-'.str_pad($nextNum, 4, '0', STR_PAD_LEFT).'-'.$randomStr;
 
         // Support scanned identifiers or fall back to auto-generated codes
-        $bagCode = !empty($data['bag_code']) ? trim($data['bag_code']) : (!empty($data['barcode_code']) ? trim($data['barcode_code']) : $generatedBagCode);
-        $barcodeCode = !empty($data['barcode_code']) ? trim($data['barcode_code']) : $bagCode;
-        $qrCode = !empty($data['qr_code']) ? trim($data['qr_code']) : ('QR-' . $barcodeCode);
+        $bagCode = ! empty($data['bag_code']) ? trim($data['bag_code']) : (! empty($data['barcode_code']) ? trim($data['barcode_code']) : $generatedBagCode);
+        $barcodeCode = ! empty($data['barcode_code']) ? trim($data['barcode_code']) : $bagCode;
+        $qrCode = ! empty($data['qr_code']) ? trim($data['qr_code']) : ('QR-'.$barcodeCode);
 
         $bag = StockBag::create([
             'bag_code' => $bagCode,
@@ -338,6 +340,16 @@ class StockBagController extends Controller implements HasMiddleware
             'notes' => $data['notes'] ?? null,
             'created_by' => $authUser->id ?? 1,
         ]);
+
+        // Automatically update matching system BarcodeToken status to 'used'
+        if (! empty($data['barcode_code'])) {
+            $tokenCode = trim($data['barcode_code']);
+            BarcodeToken::where('token_code', $tokenCode)->update([
+                'status' => 'used',
+                'used_at' => now(),
+                'used_by' => $authUser->id ?? 1,
+            ]);
+        }
 
         $bag->load([
             'stockInBatch:id,batch_number',
@@ -368,7 +380,7 @@ class StockBagController extends Controller implements HasMiddleware
                 'updater:id,name,username,email',
             ])->find($id);
 
-            if (!$bag) {
+            if (! $bag) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Stock bag not found',
@@ -379,7 +391,7 @@ class StockBagController extends Controller implements HasMiddleware
             $authUser = auth('api')->user();
             if ($authUser) {
                 $accessibleWarehouseIds = $authUser->getAccessibleWarehouseIds();
-                if (is_array($accessibleWarehouseIds) && !in_array($bag->warehouse_id, $accessibleWarehouseIds)) {
+                if (is_array($accessibleWarehouseIds) && ! in_array($bag->warehouse_id, $accessibleWarehouseIds)) {
                     return response()->json([
                         'status' => 'error',
                         'message' => 'Unauthorized access to this bag',
@@ -411,7 +423,7 @@ class StockBagController extends Controller implements HasMiddleware
         try {
             $bag = StockBag::find($id);
 
-            if (!$bag) {
+            if (! $bag) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Stock bag not found',
@@ -422,7 +434,7 @@ class StockBagController extends Controller implements HasMiddleware
             $authUser = auth('api')->user();
             if ($authUser) {
                 $accessibleWarehouseIds = $authUser->getAccessibleWarehouseIds();
-                if (is_array($accessibleWarehouseIds) && !in_array($bag->warehouse_id, $accessibleWarehouseIds)) {
+                if (is_array($accessibleWarehouseIds) && ! in_array($bag->warehouse_id, $accessibleWarehouseIds)) {
                     return response()->json([
                         'status' => 'error',
                         'message' => 'Unauthorized access to update this bag',
@@ -443,7 +455,34 @@ class StockBagController extends Controller implements HasMiddleware
 
             $validated['updated_by'] = $authUser->id ?? 1;
 
-            $bag->update($validated);
+            $oldBarcode = $bag->barcode_code;
+
+            DB::transaction(function () use ($bag, $validated, $oldBarcode, $authUser) {
+                $bag->update($validated);
+
+                // Handle BarcodeToken status transition if barcode_code was updated
+                if (isset($validated['barcode_code']) && trim($validated['barcode_code']) !== $oldBarcode) {
+                    $newBarcode = trim($validated['barcode_code']);
+
+                    // Free old barcode token if it existed
+                    if (! empty($oldBarcode)) {
+                        BarcodeToken::where('token_code', $oldBarcode)->update([
+                            'status' => 'unused',
+                            'used_at' => null,
+                            'used_by' => null,
+                        ]);
+                    }
+
+                    // Mark new barcode token as used
+                    if (! empty($newBarcode)) {
+                        BarcodeToken::where('token_code', $newBarcode)->update([
+                            'status' => 'used',
+                            'used_at' => now(),
+                            'used_by' => $authUser->id ?? 1,
+                        ]);
+                    }
+                }
+            });
 
             $this->logActivity('UPDATE', 'StockBag', "Updated bag: {$bag->bag_code}", $request->validated());
 
@@ -480,7 +519,7 @@ class StockBagController extends Controller implements HasMiddleware
 
             $bag = StockBag::find($id);
 
-            if (!$bag) {
+            if (! $bag) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Stock bag not found',
@@ -520,7 +559,7 @@ class StockBagController extends Controller implements HasMiddleware
         try {
             $bag = StockBag::find($id);
 
-            if (!$bag) {
+            if (! $bag) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Stock bag not found',
