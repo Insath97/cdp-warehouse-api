@@ -23,6 +23,7 @@ return new class extends Migration
             $table->foreignId('warehouse_id')->nullable()->constrained('warehouses')->nullOnDelete();
             $table->boolean('is_active')->default(true);
             $table->boolean('can_login')->default(true);
+            $table->integer('password_change_count')->default(0);
             $table->timestamp('last_login_at')->nullable();
             $table->string('last_login_ip')->nullable();
             $table->rememberToken();

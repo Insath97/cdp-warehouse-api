@@ -58,13 +58,14 @@ class SettingController extends Controller implements HasMiddleware
             $updatedSettings = [];
 
             foreach ($settingsInput as $key => $value) {
-                // Perform update or create dynamically
-                $setting = SystemSetting::updateOrCreate(
-                    ['key' => $key],
-                    ['value' => is_null($value) ? '' : (string)$value]
-                );
-
-                $updatedSettings[$key] = $setting->value;
+                // Update existing setting key only
+                $setting = SystemSetting::where('key', $key)->first();
+                if ($setting) {
+                    $setting->update([
+                        'value' => is_null($value) ? '' : (string)$value
+                    ]);
+                    $updatedSettings[$key] = $setting->value;
+                }
             }
 
             // Log activity

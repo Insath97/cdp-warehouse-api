@@ -15,9 +15,6 @@ class SystemSettingSeeder extends Seeder
         $settings = [
             'otp_expiry_minutes' => '10',
             'staff_password_change_limit' => '3',
-            'company_name' => 'CDP Warehouse Empire',
-            'currency' => 'LKR',
-            'low_stock_threshold_bags' => '50',
             'sms_notifications_enabled' => '1',
         ];
 

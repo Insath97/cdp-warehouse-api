@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\SystemSetting;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -25,9 +26,32 @@ class SaveSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'settings' => 'required|array',
-            'settings.*' => 'nullable|string',
+            'settings' => 'required|array|min:1',
+            'settings.*' => 'nullable|string|max:255',
         ];
+    }
+
+    /**
+     * Validate that submitted setting keys already exist in the database (preventing creation of new keys from frontend).
+     */
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function ($validator) {
+            $settings = $this->input('settings');
+            if (!is_array($settings)) {
+                return;
+            }
+
+            $allowedKeys = SystemSetting::pluck('key')->toArray();
+            $invalidKeys = array_diff(array_keys($settings), $allowedKeys);
+
+            foreach ($invalidKeys as $invalidKey) {
+                $validator->errors()->add(
+                    'settings.' . $invalidKey,
+                    "The setting key '{$invalidKey}' is invalid. New setting keys cannot be created from the frontend."
+                );
+            }
+        });
     }
 
     protected function failedValidation(Validator $validator)
