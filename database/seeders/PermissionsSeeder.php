@@ -209,6 +209,9 @@ class PermissionsSeeder extends Seeder
             /* Inventory Reports Management */
             ['name' => 'InventoryReport Index', 'group_name' => 'Inventory Report Management Permissions'],
 
+            /* Report Management */
+            ['name' => 'Report Index', 'group_name' => 'Report Management Permissions'],
+
             /* Executive Dashboard Management */
             ['name' => 'Dashboard Index', 'group_name' => 'Executive Dashboard Permissions'],
 

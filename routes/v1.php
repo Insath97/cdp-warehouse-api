@@ -33,6 +33,7 @@ use App\Http\Controllers\V1\DashboardController;
 use App\Http\Controllers\V1\ImportController;
 use App\Http\Controllers\V1\SmsController;
 use App\Http\Controllers\V1\SettingController;
+use App\Http\Controllers\V1\ReportController;
 use Illuminate\Support\Facades\Route;
 
 /* public routes */
@@ -219,6 +220,11 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
         Route::get('valuation', [InventoryReportController::class, 'valuation']);
         Route::get('aging', [InventoryReportController::class, 'aging']);
         Route::get('alerts', [InventoryReportController::class, 'alerts']);
+    });
+
+    // Reports
+    Route::prefix('reports')->group(function () {
+        Route::get('batch-wise', [ReportController::class, 'batchWise']);
     });
 
     // Activity Logs (Read-only: Get All and Get By ID)
