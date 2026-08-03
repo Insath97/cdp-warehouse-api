@@ -444,13 +444,31 @@ class StockBagController extends Controller implements HasMiddleware
 
             $validated = $request->validated();
 
-            if (isset($validated['bag_weight'])) {
-                $weight = (float) $validated['bag_weight'];
+            // Recalculate price totals if weight or prices are updated
+            if (isset($validated['bag_weight']) || isset($validated['unit_price']) || isset($validated['selling_price'])) {
+                $weight = isset($validated['bag_weight']) ? (float) $validated['bag_weight'] : (float) $bag->bag_weight;
                 $uPrice = isset($validated['unit_price']) ? (float) $validated['unit_price'] : (float) $bag->unit_price;
                 $sPrice = isset($validated['selling_price']) ? (float) $validated['selling_price'] : (float) $bag->selling_price;
 
                 $validated['total_price'] = $weight * $uPrice;
                 $validated['total_sales_amount'] = $weight * $sPrice;
+            }
+
+            // Resolve item variety, item type, and batch item relations if updated
+            if (isset($validated['item_variety_id'])) {
+                $itemVarietyId = $validated['item_variety_id'];
+                $batchItem = StockInBatchItem::where('stock_in_batch_id', $bag->stock_in_batch_id)
+                    ->where('item_variety_id', $itemVarietyId)
+                    ->first();
+
+                if ($batchItem) {
+                    $validated['stock_in_batch_item_id'] = $batchItem->id;
+                    $validated['item_type_id'] = $batchItem->item_type_id;
+                } else {
+                    $variety = ItemVariety::find($itemVarietyId);
+                    $validated['item_type_id'] = $variety->item_type_id ?? 1;
+                    $validated['stock_in_batch_item_id'] = null;
+                }
             }
 
             $validated['updated_by'] = $authUser->id ?? 1;
