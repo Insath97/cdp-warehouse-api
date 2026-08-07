@@ -15,6 +15,7 @@ class StockInBatch extends Model
 
     protected $fillable = [
         'batch_number',
+        'type',
         'supplier_id',
         'warehouse_id',
         'vehicle_id',
@@ -167,5 +168,17 @@ class StockInBatch extends Model
         }
 
         return $query->where('status', $status);
+    }
+
+    /**
+     * Scope a query to filter by type.
+     */
+    public function scopeByType(Builder $query, ?string $type): Builder
+    {
+        if (empty($type)) {
+            return $query;
+        }
+
+        return $query->where('type', $type);
     }
 }

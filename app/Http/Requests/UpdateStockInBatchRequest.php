@@ -25,6 +25,7 @@ class UpdateStockInBatchRequest extends FormRequest
 
         return [
             'batch_number' => 'sometimes|required|string|max:50|unique:stock_in_batches,batch_number,' . $batchId,
+            'type' => 'nullable|string|in:direct,supplier',
             'supplier_id' => 'nullable|exists:suppliers,id',
             'warehouse_id' => 'nullable|exists:warehouses,id',
             'vehicle_id' => 'nullable|exists:vehicles,id',

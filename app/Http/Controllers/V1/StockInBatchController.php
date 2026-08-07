@@ -78,6 +78,11 @@ class StockInBatchController extends Controller implements HasMiddleware
                 $query->byStatus($request->status);
             }
 
+            // Filter by type
+            if ($request->has('type') && $request->type != '') {
+                $query->byType($request->type);
+            }
+
             // Filter by date range
             if ($request->has('from_date') && $request->from_date != '') {
                 $query->whereDate('received_date', '>=', $request->from_date);
@@ -498,8 +503,12 @@ class StockInBatchController extends Controller implements HasMiddleware
                 $query->where('warehouse_id', $request->warehouse_id);
             }
 
+            if ($request->has('type') && $request->type != '') {
+                $query->byType($request->type);
+            }
+
             $batches = $query->orderBy('id', 'desc')
-                ->get(['id', 'batch_number', 'grn_number', 'supplier_id', 'warehouse_id', 'total_bags', 'received_date', 'status']);
+                ->get(['id', 'batch_number', 'grn_number', 'supplier_id', 'warehouse_id', 'total_bags', 'received_date', 'status', 'type']);
 
             return response()->json([
                 'status' => 'success',
