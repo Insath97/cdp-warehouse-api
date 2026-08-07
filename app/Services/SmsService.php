@@ -223,7 +223,7 @@ class SmsService
         }
 
         $msg = "CDP Warehouse Stock In Receipt:\n";
-        $msg .= "Batch: {$batch->batch_number} | GRN: {$batch->grn_number}\n";
+        $msg .= "Batch: {$batch->batch_number}\n";
         $msg .= "Bags: {$batch->total_bags} | Net Weight: {$batch->net_weight} KG\n";
         $msg .= "Supplier: {$batch->supplier->name}\n";
         $msg .= "Received: " . Carbon::parse($batch->received_date)->format('Y-m-d');

@@ -163,8 +163,7 @@ class StockBag extends Model
               ->orWhere('location_id', 'like', "%{$search}%")
               ->orWhere('notes', 'like', "%{$search}%")
               ->orWhereHas('stockInBatch', function (Builder $bq) use ($search) {
-                  $bq->where('batch_number', 'like', "%{$search}%")
-                    ->orWhere('grn_number', 'like', "%{$search}%");
+                  $bq->where('batch_number', 'like', "%{$search}%");
               });
         });
     }

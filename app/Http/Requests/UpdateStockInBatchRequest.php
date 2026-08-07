@@ -30,7 +30,6 @@ class UpdateStockInBatchRequest extends FormRequest
             'warehouse_id' => 'nullable|exists:warehouses,id',
             'vehicle_id' => 'nullable|exists:vehicles,id',
             'vehicle_log_id' => 'nullable|exists:vehicle_logs,id',
-            'grn_number' => 'nullable|string|max:100',
             'received_date' => 'sometimes|required|date',
             'gross_weight' => 'nullable|numeric|min:0',
             'tare_weight' => 'nullable|numeric|min:0',

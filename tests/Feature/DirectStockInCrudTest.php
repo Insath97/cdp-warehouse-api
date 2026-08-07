@@ -86,7 +86,6 @@ class DirectStockInCrudTest extends TestCase
         StockInBatch::create([
             'type' => 'direct',
             'warehouse_id' => $this->warehouse->id,
-            'grn_number' => 'GRN-DIR-TEST-1',
             'received_date' => now()->format('Y-m-d'),
             'net_weight' => 100,
             'total_bags' => 2,
@@ -98,7 +97,6 @@ class DirectStockInCrudTest extends TestCase
         StockInBatch::create([
             'type' => 'supplier',
             'warehouse_id' => $this->warehouse->id,
-            'grn_number' => 'GRN-SUP-TEST-1',
             'received_date' => now()->format('Y-m-d'),
             'net_weight' => 200,
             'total_bags' => 4,
@@ -112,7 +110,7 @@ class DirectStockInCrudTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonPath('status', 'success')
             ->assertJsonCount(1, 'data.data')
-            ->assertJsonPath('data.data.0.grn_number', 'GRN-DIR-TEST-1');
+            ->assertJsonPath('data.data.0.net_weight', '100.00');
     }
 
     /**
@@ -210,7 +208,6 @@ class DirectStockInCrudTest extends TestCase
         $batch = StockInBatch::create([
             'type' => 'direct',
             'warehouse_id' => $this->warehouse->id,
-            'grn_number' => 'GRN-DIR-TEST-2',
             'received_date' => now()->format('Y-m-d'),
             'net_weight' => 50,
             'total_bags' => 1,
@@ -223,7 +220,7 @@ class DirectStockInCrudTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonPath('status', 'success')
-            ->assertJsonPath('data.grn_number', 'GRN-DIR-TEST-2');
+            ->assertJsonPath('data.net_weight', '50.00');
     }
 
     /**
@@ -235,7 +232,6 @@ class DirectStockInCrudTest extends TestCase
         $batch = StockInBatch::create([
             'type' => 'direct',
             'warehouse_id' => $this->warehouse->id,
-            'grn_number' => 'GRN-DIR-TEST-UPDATE',
             'received_date' => now()->format('Y-m-d'),
             'net_weight' => 100,
             'total_bags' => 2,

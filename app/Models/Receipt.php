@@ -75,8 +75,7 @@ class Receipt extends Model
         return $query->where(function ($q) use ($term) {
             $q->where('receipt_number', 'like', "%{$term}%")
               ->orWhereHas('stockInBatch', function ($b) use ($term) {
-                  $b->where('batch_number', 'like', "%{$term}%")
-                    ->orWhere('grn_number', 'like', "%{$term}%");
+                  $b->where('batch_number', 'like', "%{$term}%");
               })
               ->orWhereHas('supplier', function ($s) use ($term) {
                   $s->where('name', 'like', "%{$term}%")

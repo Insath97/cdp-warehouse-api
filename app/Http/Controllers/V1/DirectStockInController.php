@@ -166,7 +166,6 @@ class DirectStockInController extends Controller implements HasMiddleware
                     'warehouse_id' => $validated['warehouse_id'],
                     'vehicle_id' => $vehicleId,
                     'vehicle_log_id' => $vehicleLogId,
-                    'grn_number' => $validated['grn_number'] ?? ('GRN-DIR-' . date('Ymd') . '-' . strtoupper(Str::random(4))),
                     'received_date' => $validated['received_date'],
                     'gross_weight' => $netWeightSum, // for direct, gross matches net weight initially
                     'tare_weight' => 0,

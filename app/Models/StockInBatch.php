@@ -20,7 +20,6 @@ class StockInBatch extends Model
         'warehouse_id',
         'vehicle_id',
         'vehicle_log_id',
-        'grn_number',
         'received_date',
         'gross_weight',
         'tare_weight',
@@ -149,7 +148,6 @@ class StockInBatch extends Model
 
         return $query->where(function (Builder $q) use ($search) {
             $q->where('batch_number', 'like', "%{$search}%")
-              ->orWhere('grn_number', 'like', "%{$search}%")
               ->orWhere('notes', 'like', "%{$search}%")
               ->orWhereHas('supplier', function (Builder $sq) use ($search) {
                   $sq->where('name', 'like', "%{$search}%")

@@ -508,7 +508,7 @@ class StockInBatchController extends Controller implements HasMiddleware
             }
 
             $batches = $query->orderBy('id', 'desc')
-                ->get(['id', 'batch_number', 'grn_number', 'supplier_id', 'warehouse_id', 'total_bags', 'received_date', 'status', 'type']);
+                ->get(['id', 'batch_number', 'supplier_id', 'warehouse_id', 'total_bags', 'received_date', 'status', 'type']);
 
             return response()->json([
                 'status' => 'success',
