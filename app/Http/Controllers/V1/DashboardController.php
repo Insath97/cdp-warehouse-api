@@ -342,7 +342,7 @@ class DashboardController extends Controller implements HasMiddleware
                 ->get();
 
             // 3. Vehicles currently inside premises
-            $vehiclesInside = VehicleLog::with(['vehicle:id,vehicle_number,type', 'warehouse:id,name'])
+            $vehiclesInside = VehicleLog::with(['vehicle:id,vehicle_number,vehicle_type', 'warehouse:id,name'])
                 ->whereNull('exit_time')
                 ->orderBy('entry_time', 'desc')
                 ->limit(5)

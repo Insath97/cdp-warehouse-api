@@ -247,8 +247,8 @@ class StockInBatchController extends Controller implements HasMiddleware
             $batch = StockInBatch::with([
                 'supplier:id,code,name,phone_primary',
                 'warehouse:id,code,name,city',
-                'vehicle:id,vehicle_number,driver_name',
-                'vehicleLog:id,log_number,entry_time,exit_time',
+                'vehicle:id,vehicle_number',
+                'vehicleLog:id,log_number,entry_time,exit_time,driver_name',
                 'items.itemType:id,name,code,description',
                 'items.itemVariety:id,name,code,slug,description',
                 'creator:id,name,username,email,user_scope,branch_id,warehouse_id',

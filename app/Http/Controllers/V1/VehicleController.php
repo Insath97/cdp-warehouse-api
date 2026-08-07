@@ -229,7 +229,7 @@ class VehicleController extends Controller implements HasMiddleware
     public function getActiveList()
     {
         try {
-            $vehicles = Vehicle::active()->orderBy('vehicle_number', 'asc')->get(['id', 'vehicle_number', 'driver_name']);
+            $vehicles = Vehicle::active()->orderBy('vehicle_number', 'asc')->get(['id', 'vehicle_number']);
 
             if ($vehicles->isEmpty()) {
                 return response()->json([

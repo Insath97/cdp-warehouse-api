@@ -19,6 +19,7 @@ use App\Http\Controllers\V1\VehicleLogController;
 use App\Http\Controllers\V1\SupplierController;
 use App\Http\Controllers\V1\WarehouseController;
 use App\Http\Controllers\V1\StockInBatchController;
+use App\Http\Controllers\V1\DirectStockInController;
 use App\Http\Controllers\V1\ReceiptController;
 use App\Http\Controllers\V1\StockBagController;
 use App\Http\Controllers\V1\QualityInspectionController;
@@ -169,6 +170,9 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
         Route::patch('{id}/status', [StockInBatchController::class, 'updateStatus']);
     });
     Route::apiResource('stock-in-batches', StockInBatchController::class);
+
+    // Direct Stock-ins (nested flow)
+    Route::apiResource('direct-stock-ins', DirectStockInController::class)->except(['destroy']);
 
     // Receipts
     Route::prefix('receipts')->group(function () {

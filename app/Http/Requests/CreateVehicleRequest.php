@@ -23,9 +23,6 @@ class CreateVehicleRequest extends FormRequest
     {
         return [
             'vehicle_number' => 'required|string|unique:vehicles,vehicle_number|max:20',
-            'driver_name' => 'nullable|string|max:255',
-            'driver_phone' => 'nullable|string|max:20',
-            'driver_nic' => 'nullable|string|max:20',
             'vehicle_type' => 'required|string|in:lorry,pickup,van,tractor,other',
             'ownership_type' => 'nullable|string|in:own,supplier,third_party',
             'supplier_id' => 'nullable|required_if:ownership_type,supplier|exists:suppliers,id',

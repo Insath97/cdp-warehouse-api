@@ -13,9 +13,6 @@ class Vehicle extends Model
 
     protected $fillable = [
         'vehicle_number',
-        'driver_name',
-        'driver_phone',
-        'driver_nic',
         'vehicle_type',
         'ownership_type',
         'supplier_id',
@@ -98,7 +95,7 @@ class Vehicle extends Model
     }
 
     /**
-     * Scope a query to search vehicles by vehicle number, driver name, phone, or NIC.
+     * Scope a query to search vehicles by vehicle number or supplier info.
      */
     public function scopeSearch(Builder $query, ?string $search): Builder
     {
@@ -108,9 +105,6 @@ class Vehicle extends Model
 
         return $query->where(function (Builder $q) use ($search) {
             $q->where('vehicle_number', 'like', "%{$search}%")
-              ->orWhere('driver_name', 'like', "%{$search}%")
-              ->orWhere('driver_phone', 'like', "%{$search}%")
-              ->orWhere('driver_nic', 'like', "%{$search}%")
               ->orWhereHas('supplier', function (Builder $sq) use ($search) {
                   $sq->where('name', 'like', "%{$search}%")
                     ->orWhere('code', 'like', "%{$search}%");

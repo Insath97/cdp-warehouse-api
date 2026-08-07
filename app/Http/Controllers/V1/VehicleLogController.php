@@ -99,9 +99,6 @@ class VehicleLogController extends Controller implements HasMiddleware
                 ['vehicle_number' => strtoupper(trim($data['vehicle_number']))],
                 [
                     'vehicle_type' => $data['vehicle_type'],
-                    'driver_name' => $data['driver_name'] ?? null,
-                    'driver_phone' => $data['driver_phone'] ?? null,
-                    'driver_nic' => $data['driver_nic'] ?? null,
                     'is_active' => true,
                 ]
             );
@@ -218,9 +215,6 @@ class VehicleLogController extends Controller implements HasMiddleware
                     ['vehicle_number' => $vehicleNumber],
                     [
                         'vehicle_type' => $vehicleType,
-                        'driver_name' => $data['driver_name'] ?? null,
-                        'driver_phone' => $data['driver_phone'] ?? null,
-                        'driver_nic' => $data['driver_nic'] ?? null,
                         'is_active' => true,
                     ]
                 );

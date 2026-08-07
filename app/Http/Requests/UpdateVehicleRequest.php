@@ -24,9 +24,6 @@ class UpdateVehicleRequest extends FormRequest
         $id = $this->route('vehicle');
         return [
             'vehicle_number' => 'sometimes|string|max:20|unique:vehicles,vehicle_number,' . $id,
-            'driver_name' => 'nullable|string|max:255',
-            'driver_phone' => 'nullable|string|max:20',
-            'driver_nic' => 'nullable|string|max:20',
             'vehicle_type' => 'sometimes|string|in:lorry,pickup,van,tractor,other',
             'ownership_type' => 'sometimes|string|in:own,supplier,third_party',
             'supplier_id' => 'nullable|exists:suppliers,id',

@@ -124,7 +124,7 @@ class BulkImportService
             'vehicles' => [
                 'model' => Vehicle::class,
                 'unique_key' => 'vehicle_number',
-                'fillable' => ['vehicle_number', 'type', 'brand', 'model', 'capacity_kg', 'driver_name', 'driver_phone', 'availability_status', 'is_active'],
+                'fillable' => ['vehicle_number', 'vehicle_type', 'ownership_type', 'supplier_id', 'tare_weight', 'availability_status', 'is_active'],
             ],
             'users' => [
                 'model' => User::class,
@@ -477,12 +477,10 @@ class BulkImportService
             'address' => '45 Commercial Ave',
             'tax_number' => 'TAX998877',
             'vehicle_number' => 'WP-CAB-1234',
-            'type' => 'Lorry',
-            'brand' => 'Isuzu',
-            'model' => 'NPR',
-            'capacity_kg' => '5000.00',
-            'driver_name' => 'Saman Perera',
-            'driver_phone' => '+94771112233',
+            'vehicle_type' => 'lorry',
+            'ownership_type' => 'own',
+            'supplier_id' => '',
+            'tare_weight' => '1500.00',
             'availability_status' => 'available',
         ];
 
