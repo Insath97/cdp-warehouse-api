@@ -264,4 +264,11 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
 
     // Database Export
     Route::get('database/export', [DatabaseController::class, 'export']);
+
+    // Data Export (Real data as CSV/Excel)
+    Route::prefix('export')->group(function () {
+        Route::get('tables', [DatabaseController::class, 'exportData']);
+        Route::get('{table}', [DatabaseController::class, 'exportTable']);
+        Route::get('all/excel', [DatabaseController::class, 'exportAllTables']);
+    });
 });
