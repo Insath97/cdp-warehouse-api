@@ -457,9 +457,11 @@ class StockInController extends Controller implements HasMiddleware
             }
 
             $validated = $request->validated();
+            $isAppend = $validated['append'] ?? false;
+            unset($validated['append']);
             $type = $batch->type; // Maintain consistent type or determine from validated/DB
 
-            DB::transaction(function () use ($batch, $validated, $type) {
+            DB::transaction(function () use ($batch, $validated, $type, $isAppend) {
                 $authUser = auth('api')->user();
                 $userId = $authUser->id ?? 1;
 
@@ -531,22 +533,24 @@ class StockInController extends Controller implements HasMiddleware
                             }
                         }
 
-                        // Delete unmatched bags first
-                        $bagsQuery = $batch->bags();
-                        if (!empty($submittedBagIds) || !empty($submittedBagCodes)) {
-                            $bagsQuery->where(function ($q) use ($submittedBagIds, $submittedBagCodes) {
-                                if (!empty($submittedBagIds)) {
-                                    $q->whereNotIn('id', $submittedBagIds);
-                                }
-                                if (!empty($submittedBagCodes)) {
-                                    $q->whereNotIn('bag_code', $submittedBagCodes);
-                                }
-                            });
-                        }
-                        $bagsQuery->delete();
+                        if (!$isAppend) {
+                            // Delete unmatched bags first
+                            $bagsQuery = $batch->bags();
+                            if (!empty($submittedBagIds) || !empty($submittedBagCodes)) {
+                                $bagsQuery->where(function ($q) use ($submittedBagIds, $submittedBagCodes) {
+                                    if (!empty($submittedBagIds)) {
+                                        $q->whereNotIn('id', $submittedBagIds);
+                                    }
+                                    if (!empty($submittedBagCodes)) {
+                                        $q->whereNotIn('bag_code', $submittedBagCodes);
+                                    }
+                                });
+                            }
+                            $bagsQuery->delete();
 
-                        // Delete unmatched items
-                        $batch->items()->whereNotIn('id', $submittedItemIds)->delete();
+                            // Delete unmatched items
+                            $batch->items()->whereNotIn('id', $submittedItemIds)->delete();
+                        }
 
                         $totalBagsCount = 0;
                         $netWeightSum = 0;
@@ -636,6 +640,12 @@ class StockInController extends Controller implements HasMiddleware
                             }
                         }
 
+                        if ($isAppend) {
+                            $totalBagsCount = StockBag::where('stock_in_batch_id', $batch->id)->count();
+                            $netWeightSum = StockBag::where('stock_in_batch_id', $batch->id)->sum('bag_weight');
+                            $totalAmountSum = StockBag::where('stock_in_batch_id', $batch->id)->sum('total_price');
+                        }
+
                         $batch->gross_weight = $netWeightSum;
                         $batch->net_weight = $netWeightSum;
                         $batch->total_bags = $totalBagsCount;
@@ -653,11 +663,9 @@ class StockInController extends Controller implements HasMiddleware
 
                     if ($hasItemsUpdate) {
                         // Delete old items and re-create updated line items
-                        $batch->items()->delete();
-
-                        $totalBags = 0;
-                        $calculatedNetWeight = 0;
-                        $totalAmount = 0;
+                        if (!$isAppend) {
+                            $batch->items()->delete();
+                        }
 
                         foreach ($itemsData as $item) {
                             $qtyBags = (int) ($item['quantity_bags'] ?? 0);
@@ -671,9 +679,28 @@ class StockInController extends Controller implements HasMiddleware
                                 ? (float) $item['total_price']
                                 : $totalWeight * $unitPrice;
 
-                            $totalBags += $qtyBags;
-                            $calculatedNetWeight += $totalWeight;
-                            $totalAmount += $totalPrice;
+                            if ($isAppend) {
+                                $existingItem = $batch->items()
+                                    ->where('item_type_id', $item['item_type_id'])
+                                    ->where('item_variety_id', $item['item_variety_id'])
+                                    ->first();
+
+                                if ($existingItem) {
+                                    $newQty = $existingItem->quantity_bags + $qtyBags;
+                                    $newWeight = $existingItem->total_weight + $totalWeight;
+                                    $newPrice = $existingItem->total_price + $totalPrice;
+
+                                    $existingItem->update([
+                                        'quantity_bags' => $newQty,
+                                        'total_weight' => $newWeight,
+                                        'unit_weight' => $newQty > 0 ? ($newWeight / $newQty) : 0,
+                                        'total_price' => $newPrice,
+                                        'remaining_quantity_bags' => $existingItem->remaining_quantity_bags + $qtyBags,
+                                        'remaining_weight' => $existingItem->remaining_weight + $totalWeight,
+                                    ]);
+                                    continue;
+                                }
+                            }
 
                             $batch->items()->create([
                                 'item_type_id' => $item['item_type_id'],
@@ -689,11 +716,13 @@ class StockInController extends Controller implements HasMiddleware
                             ]);
                         }
 
+                        $totalBags = $batch->items()->sum('quantity_bags');
+                        $calculatedNetWeight = $batch->items()->sum('total_weight');
+                        $totalAmount = $batch->items()->sum('total_price');
+
                         $validated['total_bags'] = $totalBags;
                         $validated['total_amount'] = $totalAmount;
-                        if (!isset($validated['net_weight']) || $validated['net_weight'] <= 0) {
-                            $validated['net_weight'] = $calculatedNetWeight;
-                        }
+                        $validated['net_weight'] = $calculatedNetWeight;
                     }
 
                     $batch->update($validated);

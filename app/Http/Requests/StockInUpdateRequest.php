@@ -32,6 +32,7 @@ class StockInUpdateRequest extends FormRequest
         $type = $type ?? 'direct';
 
         $rules = [
+            'append' => 'nullable|boolean',
             'batch_number' => 'sometimes|required|string|max:50|unique:stock_in_batches,batch_number,' . $batchId,
             'type' => 'nullable|string|in:direct,supplier',
             'warehouse_id' => 'sometimes|required|exists:warehouses,id',

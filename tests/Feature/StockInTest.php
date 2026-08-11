@@ -455,4 +455,162 @@ class StockInTest extends TestCase
                 ]
             ]);
     }
+
+    /**
+     * Test appending 50 bags to a direct batch that already has 100 bags (totaling 150 bags).
+     */
+    public function test_can_append_bags_to_existing_direct_batch()
+    {
+        // 1. Create a batch with 100 bags initially
+        $batch = StockInBatch::create([
+            'type' => 'direct',
+            'warehouse_id' => $this->warehouse->id,
+            'received_date' => '2026-08-10',
+            'status' => 'received',
+            'net_weight' => 5000.00,
+            'total_bags' => 100,
+            'total_amount' => 10000.00,
+            'created_by' => $this->user->id,
+        ]);
+
+        $item = $batch->items()->create([
+            'item_type_id' => $this->itemType->id,
+            'item_variety_id' => $this->itemVariety->id,
+            'quantity_bags' => 100,
+            'unit_weight' => 50.00,
+            'total_weight' => 5000.00,
+            'unit_price' => 2.00,
+            'total_price' => 10000.00,
+            'remaining_quantity_bags' => 100,
+            'remaining_weight' => 5000.00,
+        ]);
+
+        // Add 100 bags using database insertion
+        for ($i = 1; $i <= 100; $i++) {
+            StockBag::create([
+                'stock_in_batch_id' => $batch->id,
+                'stock_in_batch_item_id' => $item->id,
+                'branch_id' => $this->warehouse->branch_id,
+                'warehouse_id' => $this->warehouse->id,
+                'item_type_id' => $this->itemType->id,
+                'item_variety_id' => $this->itemVariety->id,
+                'bag_weight' => 50.00,
+                'unit_price' => 2.00,
+                'selling_price' => 2.00,
+                'status' => 'in_stock',
+                'created_by' => $this->user->id,
+            ]);
+        }
+
+        // Verify initial setup has 100 bags
+        $this->assertEquals(100, StockBag::where('stock_in_batch_id', $batch->id)->count());
+
+        // 2. Define payload with append = true, submitting 50 additional bags
+        $additionalBags = [];
+        for ($j = 1; $j <= 50; $j++) {
+            $additionalBags[] = [
+                'bag_weight' => 50.00,
+            ];
+        }
+
+        $payload = [
+            'append' => true,
+            'warehouse_id' => $this->warehouse->id,
+            'received_date' => '2026-08-11',
+            'items' => [
+                [
+                    'id' => $item->id,
+                    'item_type_id' => $this->itemType->id,
+                    'item_variety_id' => $this->itemVariety->id,
+                    'unit_price' => 2.00,
+                    'bags' => $additionalBags,
+                ]
+            ]
+        ];
+
+        // 3. Make PUT request
+        $response = $this->putJson("/api/v1/stock-ins/{$batch->id}", $payload);
+
+        $response->assertStatus(200);
+
+        // 4. Assert totals in the database
+        $this->assertEquals(150, StockBag::where('stock_in_batch_id', $batch->id)->count());
+        $this->assertDatabaseHas('stock_in_batches', [
+            'id' => $batch->id,
+            'total_bags' => 150,
+            'net_weight' => 7500.00, // (100 * 50) + (50 * 50) = 7500
+            'total_amount' => 15000.00, // 7500 * 2 = 15000
+        ]);
+
+        $this->assertDatabaseHas('stock_in_batch_items', [
+            'id' => $item->id,
+            'quantity_bags' => 150,
+            'total_weight' => 7500.00,
+            'total_price' => 15000.00,
+        ]);
+    }
+
+    /**
+     * Test appending bags in supplier flow.
+     */
+    public function test_can_append_to_existing_supplier_batch()
+    {
+        $batch = StockInBatch::create([
+            'type' => 'supplier',
+            'warehouse_id' => $this->warehouse->id,
+            'supplier_id' => $this->supplier->id,
+            'received_date' => '2026-08-10',
+            'status' => 'received',
+            'net_weight' => 5000.00,
+            'total_bags' => 100,
+            'total_amount' => 10000.00,
+            'created_by' => $this->user->id,
+        ]);
+
+        $item = $batch->items()->create([
+            'item_type_id' => $this->itemType->id,
+            'item_variety_id' => $this->itemVariety->id,
+            'quantity_bags' => 100,
+            'unit_weight' => 50.00,
+            'total_weight' => 5000.00,
+            'unit_price' => 2.00,
+            'total_price' => 10000.00,
+            'remaining_quantity_bags' => 100,
+            'remaining_weight' => 5000.00,
+        ]);
+
+        $payload = [
+            'append' => true,
+            'warehouse_id' => $this->warehouse->id,
+            'supplier_id' => $this->supplier->id,
+            'received_date' => '2026-08-11',
+            'items' => [
+                [
+                    'item_type_id' => $this->itemType->id,
+                    'item_variety_id' => $this->itemVariety->id,
+                    'quantity_bags' => 50,
+                    'unit_weight' => 50.00,
+                    'unit_price' => 2.00,
+                ]
+            ]
+        ];
+
+        $response = $this->putJson("/api/v1/stock-ins/{$batch->id}", $payload);
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('stock_in_batches', [
+            'id' => $batch->id,
+            'total_bags' => 150,
+            'net_weight' => 7500.00,
+            'total_amount' => 15000.00,
+        ]);
+
+        $this->assertDatabaseHas('stock_in_batch_items', [
+            'id' => $item->id,
+            'quantity_bags' => 150,
+            'total_weight' => 7500.00,
+            'total_price' => 15000.00,
+        ]);
+    }
 }
