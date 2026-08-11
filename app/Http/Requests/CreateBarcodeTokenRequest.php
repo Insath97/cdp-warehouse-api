@@ -22,7 +22,7 @@ class CreateBarcodeTokenRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'quantity' => 'required|integer|min:1|max:500', // allows batch generation up to 500
+            'quantity' => 'required|integer|min:1|max:1500', // allows batch generation up to 500
             'token_type' => 'required|string|in:qr,barcode',
             'item_type_id' => 'nullable|integer|exists:item_types,id',
             'item_variety_id' => 'nullable|integer|exists:item_varieties,id',
