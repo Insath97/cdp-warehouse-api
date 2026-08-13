@@ -43,6 +43,14 @@ Route::prefix('v1')->group(function () {
     Route::post('forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:auth');
     Route::post('verify-otp', [AuthController::class, 'verifyOtp'])->middleware('throttle:auth');
     Route::post('reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:auth');
+
+
+        // Stock In Batches consolidated
+    Route::prefix('stock-ins')->group(function () {
+        Route::get('list', [StockInController::class, 'getActiveList']);
+        Route::patch('{id}/status', [StockInController::class, 'updateStatus']);
+    });
+    Route::apiResource('stock-ins', StockInController::class);
 });
 
 /* protected routes */
@@ -163,12 +171,7 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
     });
     Route::apiResource('warehouses', WarehouseController::class);
 
-    // Stock In Batches consolidated
-    Route::prefix('stock-ins')->group(function () {
-        Route::get('list', [StockInController::class, 'getActiveList']);
-        Route::patch('{id}/status', [StockInController::class, 'updateStatus']);
-    });
-    Route::apiResource('stock-ins', StockInController::class);
+
 
     // Receipts
     Route::prefix('receipts')->group(function () {
