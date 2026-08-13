@@ -171,6 +171,7 @@ class ReportController extends Controller implements HasMiddleware
 
     /**
      * Real-time stock balance summary grouped by Warehouse, Branch, Item Type, Item Variety, Grade, and Bag Count.
+     * Includes batch-level breakdown under each group.
      */
     public function balance(GetInventoryReportRequest $request)
     {
@@ -182,6 +183,7 @@ class ReportController extends Controller implements HasMiddleware
                     $join->on('stock_bags.id', '=', 'quality_inspections.stock_bag_id')
                          ->whereRaw('quality_inspections.id = (SELECT max(qi.id) FROM quality_inspections qi WHERE qi.stock_bag_id = stock_bags.id)');
                 })
+                ->leftJoin('stock_in_batches', 'stock_bags.stock_in_batch_id', '=', 'stock_in_batches.id')
                 ->select([
                     'stock_bags.branch_id',
                     'stock_bags.warehouse_id',
@@ -214,6 +216,12 @@ class ReportController extends Controller implements HasMiddleware
             if (!empty($validated['item_variety_id'])) {
                 $query->where('stock_bags.item_variety_id', $validated['item_variety_id']);
             }
+            if (!empty($validated['from_date'])) {
+                $query->where('stock_in_batches.received_date', '>=', $validated['from_date']);
+            }
+            if (!empty($validated['to_date'])) {
+                $query->where('stock_in_batches.received_date', '<=', $validated['to_date']);
+            }
 
             $results = $query->groupBy(
                 'stock_bags.branch_id',
@@ -231,10 +239,99 @@ class ReportController extends Controller implements HasMiddleware
                 'itemVariety:id,name,code'
             ]);
 
+            // Fetch batch-level breakdown for each group
+            $results->each(function ($item) use ($validated) {
+                $batches = StockBag::where('stock_bags.status', 'in_stock')
+                    ->where('stock_bags.warehouse_id', $item->warehouse_id)
+                    ->where('stock_bags.branch_id', $item->branch_id)
+                    ->where('stock_bags.item_type_id', $item->item_type_id)
+                    ->where('stock_bags.item_variety_id', $item->item_variety_id)
+                    ->leftJoin('quality_inspections', function ($join) {
+                        $join->on('stock_bags.id', '=', 'quality_inspections.stock_bag_id')
+                             ->whereRaw('quality_inspections.id = (SELECT max(qi.id) FROM quality_inspections qi WHERE qi.stock_bag_id = stock_bags.id)');
+                    })
+                    ->whereRaw('COALESCE(quality_inspections.grade, "A") = ?', [$item->grade])
+                    ->leftJoin('stock_in_batches', 'stock_bags.stock_in_batch_id', '=', 'stock_in_batches.id')
+                    ->leftJoin('suppliers', 'stock_in_batches.supplier_id', '=', 'suppliers.id');
+
+                if (!empty($validated['from_date'])) {
+                    $batches->where('stock_in_batches.received_date', '>=', $validated['from_date']);
+                }
+                if (!empty($validated['to_date'])) {
+                    $batches->where('stock_in_batches.received_date', '<=', $validated['to_date']);
+                }
+
+                $batches = $batches->select([
+                        'stock_bags.stock_in_batch_id',
+                        'stock_in_batches.batch_number as batch_code',
+                        'stock_in_batches.received_date',
+                        'suppliers.id as supplier_id',
+                        'suppliers.name as supplier_name',
+                        DB::raw('count(stock_bags.id) as total_bags'),
+                        DB::raw('sum(stock_bags.bag_weight) as total_weight'),
+                        DB::raw('sum(stock_bags.total_price) as total_cost'),
+                        DB::raw('sum(stock_bags.total_sales_amount) as expected_sales'),
+                        DB::raw('ROUND(sum(stock_bags.bag_weight) / count(stock_bags.id), 2) as avg_weight_per_bag'),
+                    ])
+                    ->groupBy(
+                        'stock_bags.stock_in_batch_id',
+                        'stock_in_batches.batch_number',
+                        'stock_in_batches.received_date',
+                        'suppliers.id',
+                        'suppliers.name'
+                    )
+                    ->orderBy('stock_in_batches.received_date', 'desc')
+                    ->get();
+
+                // Add bag status counts per batch (from all bags in that batch, not just in_stock)
+                $batches->each(function ($batch) {
+                    $bagCounts = StockBag::where('stock_in_batch_id', $batch->stock_in_batch_id)
+                        ->selectRaw('
+                            count(id) as total_bags,
+                            sum(case when status = "in_stock" then 1 else 0 end) as in_stock,
+                            sum(case when status = "dispatched" then 1 else 0 end) as dispatched,
+                            sum(case when status = "damaged" then 1 else 0 end) as damaged,
+                            sum(case when status = "returned" then 1 else 0 end) as returned
+                        ')
+                        ->first();
+
+                    $batch->bag_status = [
+                        'total_bags' => (int) $bagCounts->total_bags,
+                        'in_stock' => (int) $bagCounts->in_stock,
+                        'dispatched' => (int) $bagCounts->dispatched,
+                        'damaged' => (int) $bagCounts->damaged,
+                        'returned' => (int) $bagCounts->returned,
+                    ];
+                });
+
+                $item->batches = $batches;
+            });
+
+            // Calculate grand totals
+            $totalBags = $results->sum('total_bags');
+            $totalWeight = (float) $results->sum('total_weight');
+
+            // Add per-row calculations
+            $results->each(function ($item) use ($totalBags, $totalWeight) {
+                $item->avg_weight_per_bag = $item->total_bags > 0
+                    ? round((float) $item->total_weight / $item->total_bags, 2)
+                    : 0;
+                $item->weight_percentage = $totalWeight > 0
+                    ? round(((float) $item->total_weight / $totalWeight) * 100, 2)
+                    : 0;
+            });
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Stock balance summary retrieved successfully',
-                'data' => $results,
+                'data' => [
+                    'summary' => [
+                        'total_bags' => (int) $totalBags,
+                        'total_weight' => round($totalWeight, 2),
+                        'total_groups' => $results->count(),
+                    ],
+                    'stocks' => $results,
+                ],
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([

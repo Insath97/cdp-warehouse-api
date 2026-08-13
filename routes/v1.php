@@ -213,17 +213,13 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
     });
     Route::apiResource('barcode-tokens', BarcodeTokenController::class)->except(['update', 'destroy']);
 
-    // Inventory Reports
-    Route::prefix('inventory-reports')->group(function () {
+    // Reports
+    Route::prefix('reports')->group(function () {
+        Route::get('batch-wise', [ReportController::class, 'batchWise']);
         Route::get('balance', [ReportController::class, 'balance']);
         Route::get('valuation', [ReportController::class, 'valuation']);
         Route::get('aging', [ReportController::class, 'aging']);
         Route::get('alerts', [ReportController::class, 'alerts']);
-    });
-
-    // Reports
-    Route::prefix('reports')->group(function () {
-        Route::get('batch-wise', [ReportController::class, 'batchWise']);
     });
 
     // Activity Logs (Read-only: Get All and Get By ID)
