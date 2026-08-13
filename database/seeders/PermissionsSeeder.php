@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -239,6 +238,18 @@ class PermissionsSeeder extends Seeder
             /* System Setting Management */
             ['name' => 'Setting Index', 'group_name' => 'System Setting Management Permissions'],
             ['name' => 'Setting Update', 'group_name' => 'System Setting Management Permissions'],
+
+            /* Purchase Order Management */
+            ['name' => 'PurchaseOrder Index', 'group_name' => 'Purchase Order Management Permissions'],
+            ['name' => 'PurchaseOrder Create', 'group_name' => 'Purchase Order Management Permissions'],
+            ['name' => 'PurchaseOrder Update', 'group_name' => 'Purchase Order Management Permissions'],
+            ['name' => 'PurchaseOrder Delete', 'group_name' => 'Purchase Order Management Permissions'],
+            ['name' => 'PurchaseOrder Approve', 'group_name' => 'Purchase Order Management Permissions'],
+            ['name' => 'PurchaseOrder Verify', 'group_name' => 'Purchase Order Management Permissions'],
+            ['name' => 'PurchaseOrder Payment', 'group_name' => 'Purchase Order Management Permissions'],
+
+            /* Notification Management */
+            ['name' => 'Notification Index', 'group_name' => 'Notification Management Permissions'],
         ];
 
         foreach ($permissions as $permission) {

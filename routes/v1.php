@@ -33,6 +33,8 @@ use App\Http\Controllers\V1\ImportController;
 use App\Http\Controllers\V1\SmsController;
 use App\Http\Controllers\V1\SettingController;
 use App\Http\Controllers\V1\ReportController;
+use App\Http\Controllers\V1\PurchaseOrderController;
+use App\Http\Controllers\V1\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 /* public routes */
@@ -161,6 +163,21 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
         Route::patch('{id}/toggle-status', [WarehouseController::class, 'toggleStatus']);
     });
     Route::apiResource('warehouses', WarehouseController::class);
+
+    // Purchase Orders
+    Route::prefix('purchase-orders')->group(function () {
+        Route::patch('{id}/bargain', [PurchaseOrderController::class, 'bargain']);
+        Route::patch('{id}/verify', [PurchaseOrderController::class, 'verify']);
+        Route::post('{id}/payment', [PurchaseOrderController::class, 'updatePayment']);
+    });
+    Route::apiResource('purchase-orders', PurchaseOrderController::class);
+
+    // Notifications
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [NotificationController::class, 'index']);
+        Route::patch('{id}/read', [NotificationController::class, 'markAsRead']);
+        Route::post('read-all', [NotificationController::class, 'markAllAsRead']);
+    });
 
     // Stock In Batches consolidated
     Route::prefix('stock-ins')->group(function () {
