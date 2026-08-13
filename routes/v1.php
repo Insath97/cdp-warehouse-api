@@ -27,7 +27,6 @@ use App\Http\Controllers\V1\BuyerController;
 use App\Http\Controllers\V1\InvoiceController;
 use App\Http\Controllers\V1\StockDispatchController;
 use App\Http\Controllers\V1\BarcodeTokenController;
-use App\Http\Controllers\V1\InventoryReportController;
 use App\Http\Controllers\V1\DatabaseController;
 use App\Http\Controllers\V1\DashboardController;
 use App\Http\Controllers\V1\ImportController;
@@ -216,10 +215,10 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
 
     // Inventory Reports
     Route::prefix('inventory-reports')->group(function () {
-        Route::get('balance', [InventoryReportController::class, 'balance']);
-        Route::get('valuation', [InventoryReportController::class, 'valuation']);
-        Route::get('aging', [InventoryReportController::class, 'aging']);
-        Route::get('alerts', [InventoryReportController::class, 'alerts']);
+        Route::get('balance', [ReportController::class, 'balance']);
+        Route::get('valuation', [ReportController::class, 'valuation']);
+        Route::get('aging', [ReportController::class, 'aging']);
+        Route::get('alerts', [ReportController::class, 'alerts']);
     });
 
     // Reports
