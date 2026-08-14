@@ -39,7 +39,17 @@ class PurchaseOrderNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        $channels = [];
+
+        if (!isset($notifiable->enable_email_notification) || $notifiable->enable_email_notification) {
+            $channels[] = 'mail';
+        }
+
+        if (!isset($notifiable->enable_system_notification) || $notifiable->enable_system_notification) {
+            $channels[] = 'database';
+        }
+
+        return $channels;
     }
 
     /**

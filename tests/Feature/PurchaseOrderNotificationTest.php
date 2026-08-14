@@ -332,4 +332,61 @@ class PurchaseOrderNotificationTest extends TestCase
         $this->verifierUser->refresh();
         $this->assertCount(0, $this->verifierUser->unreadNotifications);
     }
+
+    /**
+     * Test user notification channel preferences (email/system toggle).
+     */
+    public function test_notification_preferences_respected()
+    {
+        Notification::fake();
+
+        // Create PO
+        $po = PurchaseOrder::create([
+            'po_number' => 'PO-PREF-TEST',
+            'supplier_id' => $this->supplier->id,
+            'warehouse_id' => $this->warehouse->id,
+            'item_variety_id' => $this->itemVariety->id,
+            'variety_type' => 'dry',
+            'purchase_price_per_kg' => 110.00,
+            'number_of_bags' => 100,
+            'total_weights' => 5000.00,
+            'total_sales_price' => 550000.00,
+            'status' => 'approved',
+            'created_by' => $this->creatorUser->id,
+        ]);
+
+        // User B has email enabled, system disabled
+        $this->approverUser->update([
+            'enable_email_notification' => true,
+            'enable_system_notification' => false,
+        ]);
+
+        // User C has email disabled, system enabled
+        $this->verifierUser->update([
+            'enable_email_notification' => false,
+            'enable_system_notification' => true,
+        ]);
+
+        // 1. Notify User B -> should only go to mail channel
+        $this->approverUser->notify(new PurchaseOrderNotification($po, "Test Title", "Test Message"));
+
+        Notification::assertSentTo(
+            $this->approverUser,
+            PurchaseOrderNotification::class,
+            function ($notification, $channels) {
+                return in_array('mail', $channels) && !in_array('database', $channels);
+            }
+        );
+
+        // 2. Notify User C -> should only go to database channel
+        $this->verifierUser->notify(new PurchaseOrderNotification($po, "Test Title 2", "Test Message 2"));
+
+        Notification::assertSentTo(
+            $this->verifierUser,
+            PurchaseOrderNotification::class,
+            function ($notification, $channels) {
+                return !in_array('mail', $channels) && in_array('database', $channels);
+            }
+        );
+    }
 }
