@@ -442,4 +442,75 @@ class PurchaseOrderTest extends TestCase
         $response = $this->getJson("/api/v1/purchase-orders/{$poBeta->id}");
         $response->assertStatus(200);
     }
+
+    /**
+     * Test getActiveList multiple status and payment_status filters.
+     */
+    public function test_get_active_list_filtering()
+    {
+        // Setup POs with various statuses
+        $poApproved = PurchaseOrder::create([
+            'po_number' => 'PO-FILT-1',
+            'supplier_id' => $this->supplier->id,
+            'warehouse_id' => $this->warehouse->id,
+            'item_variety_id' => $this->itemVariety->id,
+            'variety_type' => 'dry',
+            'purchase_price_per_kg' => 110.00,
+            'number_of_bags' => 10,
+            'total_weights' => 500.00,
+            'total_sales_price' => 55000.00,
+            'status' => 'approved',
+            'payment_status' => 'pending',
+            'created_by' => $this->adminUser->id,
+        ]);
+
+        $poVerified = PurchaseOrder::create([
+            'po_number' => 'PO-FILT-2',
+            'supplier_id' => $this->supplier->id,
+            'warehouse_id' => $this->warehouse->id,
+            'item_variety_id' => $this->itemVariety->id,
+            'variety_type' => 'dry',
+            'purchase_price_per_kg' => 110.00,
+            'number_of_bags' => 10,
+            'total_weights' => 500.00,
+            'total_sales_price' => 55000.00,
+            'status' => 'verified',
+            'payment_status' => 'pending',
+            'created_by' => $this->adminUser->id,
+        ]);
+
+        $poPaid = PurchaseOrder::create([
+            'po_number' => 'PO-FILT-3',
+            'supplier_id' => $this->supplier->id,
+            'warehouse_id' => $this->warehouse->id,
+            'item_variety_id' => $this->itemVariety->id,
+            'variety_type' => 'dry',
+            'purchase_price_per_kg' => 110.00,
+            'number_of_bags' => 10,
+            'total_weights' => 500.00,
+            'total_sales_price' => 55000.00,
+            'status' => 'verified',
+            'payment_status' => 'paid',
+            'created_by' => $this->adminUser->id,
+        ]);
+
+        $this->authenticate($this->otherUser);
+
+        // Fetch list with status approved and verified
+        $response = $this->getJson('/api/v1/purchase-orders/list?status=approved,verified');
+        $response->assertStatus(200);
+        $data = $response->json('data');
+        $poNumbers = collect($data)->pluck('po_number');
+
+        $this->assertTrue($poNumbers->contains('PO-FILT-1'));
+        $this->assertTrue($poNumbers->contains('PO-FILT-2'));
+        $this->assertTrue($poNumbers->contains('PO-FILT-3'));
+
+        // Fetch list with payment_status = paid
+        $response = $this->getJson('/api/v1/purchase-orders/list?payment_status=paid');
+        $response->assertStatus(200);
+        $data = $response->json('data');
+        $this->assertCount(1, $data);
+        $this->assertEquals('PO-FILT-3', $data[0]['po_number']);
+    }
 }

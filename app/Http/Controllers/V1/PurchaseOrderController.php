@@ -850,13 +850,19 @@ class PurchaseOrderController extends Controller implements HasMiddleware
                 }
             }
 
-            // Optional status filter
+            // Optional status filter (comma-separated or single string)
             if ($request->has('status') && $request->status != '') {
-                $query->where('status', $request->status);
+                $statuses = explode(',', $request->status);
+                $query->whereIn('status', $statuses);
+            }
+
+            // Optional payment status filter
+            if ($request->has('payment_status') && $request->payment_status != '') {
+                $query->where('payment_status', $request->payment_status);
             }
 
             $purchaseOrders = $query->orderBy('created_at', 'desc')
-                ->get(['id', 'po_number', 'supplier_id', 'warehouse_id', 'item_variety_id', 'status', 'total_weights', 'number_of_bags']);
+                ->get(['id', 'po_number', 'supplier_id', 'warehouse_id', 'item_variety_id', 'status', 'payment_status', 'total_weights', 'number_of_bags']);
 
             return response()->json([
                 'status' => 'success',
