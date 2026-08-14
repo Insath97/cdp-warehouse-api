@@ -30,13 +30,10 @@ class PurchaseOrderController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:PurchaseOrder Index', ['only' => ['index', 'show']]),
-            new Middleware('permission:PurchaseOrder Create', ['only' => ['store']]),
-            new Middleware('permission:PurchaseOrder Update', ['only' => ['update']]),
-            new Middleware('permission:PurchaseOrder Delete', ['only' => ['destroy']]),
-            new Middleware('permission:PurchaseOrder Approve', ['only' => ['bargain']]),
-            new Middleware('permission:PurchaseOrder Verify', ['only' => ['verify']]),
-            new Middleware('permission:PurchaseOrder Payment', ['only' => ['updatePayment']]),
+            new Middleware('permission:PurchaseOrder Index', ['only' => ['index', 'show', 'getActiveList']]),
+            new Middleware('permission:PurchaseOrder Create', ['only' => ['store', 'update', 'destroy']]),
+            new Middleware('permission:PurchaseOrder Create|PurchaseOrder Approve', ['only' => ['bargain']]),
+            new Middleware('permission:PurchaseOrder Verify', ['only' => ['verify', 'updatePayment']]),
         ];
     }
 
@@ -421,6 +418,16 @@ class PurchaseOrderController extends Controller implements HasMiddleware
             $action = $data['action'];
             $isCreator = ((int) $po->created_by === (int) $authUser->id);
 
+            // Only users with PurchaseOrder Approve permission can approve
+            if ($action === 'approve') {
+                if (!$authUser->hasPermissionTo('PurchaseOrder Approve', 'api')) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'You do not have permission to approve purchase orders.',
+                    ], 403);
+                }
+            }
+
             // Enforce turn-taking loop constraints
             if ($po->status === 'price_suggested') {
                 if ($isCreator && !$po->isWaitingForCreator()) {
@@ -793,6 +800,49 @@ class PurchaseOrderController extends Controller implements HasMiddleware
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to update payment status',
+                'error' => config('app.debug') ? $th->getMessage() : 'Internal server error',
+            ], 500);
+        }
+    }
+
+    /**
+     * Get active purchase orders list for select box (no permission required).
+     */
+    public function getActiveList(Request $request)
+    {
+        try {
+            $query = PurchaseOrder::with([
+                'supplier:id,name,code',
+                'warehouse:id,name,code',
+                'itemVariety:id,name,code',
+            ]);
+
+            // Apply tenancy constraints
+            $authUser = auth('api')->user();
+            if ($authUser) {
+                $accessibleWarehouseIds = $authUser->getAccessibleWarehouseIds();
+                if (is_array($accessibleWarehouseIds)) {
+                    $query->whereIn('warehouse_id', $accessibleWarehouseIds);
+                }
+            }
+
+            // Optional status filter
+            if ($request->has('status') && $request->status != '') {
+                $query->where('status', $request->status);
+            }
+
+            $purchaseOrders = $query->orderBy('created_at', 'desc')
+                ->get(['id', 'po_number', 'supplier_id', 'warehouse_id', 'item_variety_id', 'status', 'total_weights', 'number_of_bags']);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Purchase orders list retrieved successfully',
+                'data' => $purchaseOrders,
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retrieve purchase orders list',
                 'error' => config('app.debug') ? $th->getMessage() : 'Internal server error',
             ], 500);
         }

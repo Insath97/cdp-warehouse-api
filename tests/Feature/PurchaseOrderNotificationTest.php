@@ -133,7 +133,6 @@ class PurchaseOrderNotificationTest extends TestCase
         $this->creatorUser->givePermissionTo([
             'PurchaseOrder Index',
             'PurchaseOrder Create',
-            'PurchaseOrder Update',
         ]);
 
         // User B: Approver
@@ -164,7 +163,6 @@ class PurchaseOrderNotificationTest extends TestCase
         $this->verifierUser->givePermissionTo([
             'PurchaseOrder Index',
             'PurchaseOrder Verify',
-            'PurchaseOrder Payment',
             'Notification Index',
         ]);
     }

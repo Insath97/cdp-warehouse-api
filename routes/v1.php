@@ -166,6 +166,7 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
 
     // Purchase Orders
     Route::prefix('purchase-orders')->group(function () {
+        Route::get('list', [PurchaseOrderController::class, 'getActiveList']);
         Route::patch('{id}/bargain', [PurchaseOrderController::class, 'bargain']);
         Route::patch('{id}/verify', [PurchaseOrderController::class, 'verify']);
         Route::post('{id}/payment', [PurchaseOrderController::class, 'updatePayment']);

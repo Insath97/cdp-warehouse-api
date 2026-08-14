@@ -242,11 +242,8 @@ class PermissionsSeeder extends Seeder
             /* Purchase Order Management */
             ['name' => 'PurchaseOrder Index', 'group_name' => 'Purchase Order Management Permissions'],
             ['name' => 'PurchaseOrder Create', 'group_name' => 'Purchase Order Management Permissions'],
-            ['name' => 'PurchaseOrder Update', 'group_name' => 'Purchase Order Management Permissions'],
-            ['name' => 'PurchaseOrder Delete', 'group_name' => 'Purchase Order Management Permissions'],
             ['name' => 'PurchaseOrder Approve', 'group_name' => 'Purchase Order Management Permissions'],
             ['name' => 'PurchaseOrder Verify', 'group_name' => 'Purchase Order Management Permissions'],
-            ['name' => 'PurchaseOrder Payment', 'group_name' => 'Purchase Order Management Permissions'],
 
             /* Notification Management */
             ['name' => 'Notification Index', 'group_name' => 'Notification Management Permissions'],

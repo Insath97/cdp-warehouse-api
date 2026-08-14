@@ -58,11 +58,8 @@ class PurchaseOrderTest extends TestCase
         $this->otherUser->givePermissionTo([
             'PurchaseOrder Index',
             'PurchaseOrder Create',
-            'PurchaseOrder Update',
-            'PurchaseOrder Delete',
             'PurchaseOrder Approve',
             'PurchaseOrder Verify',
-            'PurchaseOrder Payment',
         ]);
 
         // Setup master data
