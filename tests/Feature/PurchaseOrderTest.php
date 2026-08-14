@@ -315,7 +315,7 @@ class PurchaseOrderTest extends TestCase
         $response->assertStatus(200);
 
         $po->refresh();
-        $this->assertEquals('price_suggested', $po->status);
+        $this->assertEquals('pending_approval', $po->status);
         $this->assertEquals(115.00, $po->purchase_price_per_kg);
         $this->assertTrue($po->isWaitingForApprover());
 

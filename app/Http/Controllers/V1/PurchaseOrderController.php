@@ -300,6 +300,10 @@ class PurchaseOrderController extends Controller implements HasMiddleware
                 $data['total_market_price'] = null;
             }
 
+            if ($po->status === 'price_suggested') {
+                $data['status'] = 'pending_approval';
+            }
+
             $po->update($data);
 
             // Add edited bargain entry to history
@@ -312,6 +316,26 @@ class PurchaseOrderController extends Controller implements HasMiddleware
             ]);
 
             $this->logActivity('UPDATE', 'PurchaseOrder', "Updated purchase order: {$po->po_number}", $data);
+
+            // Notify Approvers of the update
+            try {
+                $approvers = User::permission('PurchaseOrder Approve')->get()->filter(function ($user) use ($po) {
+                    $accessibleIds = $user->getAccessibleWarehouseIds();
+                    return is_null($accessibleIds) || in_array($po->warehouse_id, $accessibleIds);
+                });
+                if ($approvers->isNotEmpty()) {
+                    Notification::send($approvers, new PurchaseOrderNotification(
+                        $po,
+                        "Purchase Order Updated - {$po->po_number}",
+                        "The creator has updated the purchase order and it is ready for your review.",
+                        "Review Purchase Order",
+                        config('app.url') . "/purchase-orders/{$po->id}",
+                        $data['notes'] ?? null
+                    ));
+                }
+            } catch (\Throwable $e) {
+                logger()->error("Failed to send PO update notification: " . $e->getMessage());
+            }
 
             $po->load(['supplier', 'warehouse', 'itemVariety', 'creator', 'latestBargain']);
 
@@ -468,7 +492,7 @@ class PurchaseOrderController extends Controller implements HasMiddleware
                     $po->payment_status = 'cancel'; // If cancelled, payment is cancelled
                     break;
                 case 'suggest_price':
-                    $po->status = 'price_suggested';
+                    $po->status = $isCreator ? 'pending_approval' : 'price_suggested';
                     $po->purchase_price_per_kg = $data['purchase_price_per_kg'];
                     $po->total_sales_price = $data['purchase_price_per_kg'] * $po->total_weights;
                     break;
