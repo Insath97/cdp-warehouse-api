@@ -13,6 +13,7 @@ use App\Models\StockBag;
 use App\Models\Supplier;
 use App\Models\User;
 use App\Models\Warehouse;
+use App\Models\PurchaseOrder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -611,6 +612,81 @@ class StockInTest extends TestCase
             'quantity_bags' => 150,
             'total_weight' => 7500.00,
             'total_price' => 15000.00,
+        ]);
+    }
+
+    /**
+     * Test creating a stock-in batch connected to an approved and paid Purchase Order.
+     */
+    public function test_create_stock_in_with_purchase_order()
+    {
+        // 1. Create a verified and paid PO
+        $po = PurchaseOrder::create([
+            'po_number' => 'PO-STK-CONN',
+            'supplier_id' => $this->supplier->id,
+            'warehouse_id' => $this->warehouse->id,
+            'item_variety_id' => $this->itemVariety->id,
+            'variety_type' => 'dry',
+            'purchase_price_per_kg' => 110.00,
+            'number_of_bags' => 100,
+            'total_weights' => 5000.00,
+            'total_sales_price' => 550000.00,
+            'status' => 'verified',
+            'payment_status' => 'paid',
+            'created_by' => $this->user->id,
+        ]);
+
+        $payload = [
+            'type' => 'supplier',
+            'purchase_order_id' => $po->id,
+            'warehouse_id' => $this->warehouse->id,
+            'received_date' => '2026-08-14',
+            'items' => [
+                [
+                    'item_type_id' => $this->itemType->id,
+                    'item_variety_id' => $this->itemVariety->id,
+                    'quantity_bags' => 100,
+                    'unit_weight' => 50.00,
+                    'total_weight' => 5000.00,
+                    'unit_price' => 110.00,
+                    'total_price' => 550000.00,
+                ]
+            ]
+        ];
+
+        // Ensure we can create StockIn without supplying supplier_id explicitly
+        $response = $this->postJson('/api/v1/stock-ins', $payload);
+        $response->assertStatus(201);
+
+        $this->assertDatabaseHas('stock_in_batches', [
+            'purchase_order_id' => $po->id,
+            'supplier_id' => $this->supplier->id, // Resolved from PO
+            'warehouse_id' => $this->warehouse->id,
+        ]);
+        
+        // 2. Test fails if PO is not paid or verified
+        $poNotPaid = PurchaseOrder::create([
+            'po_number' => 'PO-STK-FAIL',
+            'supplier_id' => $this->supplier->id,
+            'warehouse_id' => $this->warehouse->id,
+            'item_variety_id' => $this->itemVariety->id,
+            'variety_type' => 'dry',
+            'purchase_price_per_kg' => 110.00,
+            'number_of_bags' => 100,
+            'total_weights' => 5000.00,
+            'total_sales_price' => 550000.00,
+            'status' => 'approved',
+            'payment_status' => 'pending',
+            'created_by' => $this->user->id,
+        ]);
+
+        $payloadFail = $payload;
+        $payloadFail['purchase_order_id'] = $poNotPaid->id;
+
+        $response = $this->postJson('/api/v1/stock-ins', $payloadFail);
+        $response->assertStatus(400);
+        $response->assertJsonFragment([
+            'message' => 'Purchase order must be verified and paid.',
         ]);
     }
 }

@@ -126,6 +126,25 @@ class StockInController extends Controller implements HasMiddleware
             $validated = $request->validated();
             $type = $validated['type'];
 
+            // Validate Purchase Order if supplied
+            if ($type === 'supplier' && !empty($validated['purchase_order_id'])) {
+                $po = \App\Models\PurchaseOrder::find($validated['purchase_order_id']);
+                if (!$po) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Purchase order not found.',
+                    ], 404);
+                }
+                if ($po->status !== 'verified' || $po->payment_status !== 'paid') {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Purchase order must be verified and paid.',
+                    ], 400);
+                }
+                // Pre-set supplier_id from PO
+                $validated['supplier_id'] = $po->supplier_id;
+            }
+
             $batch = DB::transaction(function () use ($validated, $type) {
                 $authUser = auth('api')->user();
                 $userId = $authUser->id ?? 1;
@@ -460,6 +479,25 @@ class StockInController extends Controller implements HasMiddleware
             $isAppend = $validated['append'] ?? false;
             unset($validated['append']);
             $type = $batch->type; // Maintain consistent type or determine from validated/DB
+
+            // Validate Purchase Order if supplied
+            if ($type === 'supplier' && !empty($validated['purchase_order_id'])) {
+                $po = \App\Models\PurchaseOrder::find($validated['purchase_order_id']);
+                if (!$po) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Purchase order not found.',
+                    ], 404);
+                }
+                if ($po->status !== 'verified' || $po->payment_status !== 'paid') {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Purchase order must be verified and paid.',
+                    ], 400);
+                }
+                // Pre-set supplier_id from PO
+                $validated['supplier_id'] = $po->supplier_id;
+            }
 
             DB::transaction(function () use ($batch, $validated, $type, $isAppend) {
                 $authUser = auth('api')->user();

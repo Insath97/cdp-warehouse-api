@@ -16,6 +16,7 @@ class StockInBatch extends Model
     protected $fillable = [
         'batch_number',
         'type',
+        'purchase_order_id',
         'supplier_id',
         'warehouse_id',
         'vehicle_id',
@@ -87,6 +88,14 @@ class StockInBatch extends Model
     public function receipt(): HasOne
     {
         return $this->hasOne(Receipt::class, 'stock_in_batch_id');
+    }
+
+    /**
+     * Relationship with Purchase Order.
+     */
+    public function purchaseOrder(): BelongsTo
+    {
+        return $this->belongsTo(PurchaseOrder::class, 'purchase_order_id');
     }
 
     /**

@@ -59,7 +59,8 @@ class StockInStoreRequest extends FormRequest
             ]);
         } else {
             $rules = array_merge($rules, [
-                'supplier_id' => 'required|exists:suppliers,id',
+                'purchase_order_id' => 'nullable|exists:purchase_orders,id',
+                'supplier_id' => 'required_without:purchase_order_id|nullable|exists:suppliers,id',
                 'vehicle_id' => 'nullable|exists:vehicles,id',
                 'vehicle_log_id' => 'nullable|exists:vehicle_logs,id',
                 'gross_weight' => 'nullable|numeric|min:0',
