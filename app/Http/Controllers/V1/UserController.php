@@ -143,7 +143,7 @@ class UserController extends Controller implements HasMiddleware
                         'user_scope' => $user->user_scope,
                         'branch_name' => $user->branch?->name,
                         'warehouse_name' => $user->warehouse?->name,
-                        'login_url' => config('app.url') . '/login',
+                        'login_url' => config('app.frontend_url') . '/login',
                         'created_by' => $authUser->name ?? 'System',
                     ];
 
