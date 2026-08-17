@@ -33,7 +33,7 @@ class ReceiptController extends Controller implements HasMiddleware
         try {
             $perPage = $request->get('per_page', 15);
             $query = Receipt::with([
-                'stockInBatch:id,batch_number,grn_number,received_date,vehicle_id',
+                'stockInBatch:id,batch_number,received_date,vehicle_id',
                 'stockInBatch.vehicle:id,vehicle_number',
                 'stockInBatch.items.itemType:id,name,code',
                 'stockInBatch.items.itemVariety:id,name,code',
@@ -199,7 +199,7 @@ class ReceiptController extends Controller implements HasMiddleware
             $receipt->save();
 
             $receipt->load([
-                'stockInBatch:id,batch_number,grn_number',
+                'stockInBatch:id,batch_number',
                 'supplier:id,code,name',
                 'warehouse:id,code,name',
                 'creator:id,name,username,email',

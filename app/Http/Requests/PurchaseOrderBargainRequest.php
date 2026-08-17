@@ -6,7 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class CreateBarcodeTokenRequest extends FormRequest
+class PurchaseOrderBargainRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,11 +22,10 @@ class CreateBarcodeTokenRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'quantity' => 'required|integer|min:1|max:1500', // allows batch generation up to 500
-            'token_type' => 'required|string|in:qr,barcode',
-            'item_type_id' => 'nullable|integer|exists:item_types,id',
-            'item_variety_id' => 'nullable|integer|exists:item_varieties,id',
-            'notes' => 'nullable|string',
+            'action' => 'required|string|in:approve,suggest_price,reject,cancel',
+            'purchase_price_per_kg' => 'required_if:action,suggest_price|nullable|numeric|min:0',
+            'total_sales_price' => 'sometimes|nullable|numeric|min:0',
+            'note' => 'nullable|string',
         ];
     }
 

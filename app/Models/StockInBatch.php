@@ -16,11 +16,11 @@ class StockInBatch extends Model
     protected $fillable = [
         'batch_number',
         'type',
+        'purchase_order_id',
         'supplier_id',
         'warehouse_id',
         'vehicle_id',
         'vehicle_log_id',
-        'grn_number',
         'received_date',
         'gross_weight',
         'tare_weight',
@@ -91,6 +91,14 @@ class StockInBatch extends Model
     }
 
     /**
+     * Relationship with Purchase Order.
+     */
+    public function purchaseOrder(): BelongsTo
+    {
+        return $this->belongsTo(PurchaseOrder::class, 'purchase_order_id');
+    }
+
+    /**
      * Relationship with Supplier.
      */
     public function supplier(): BelongsTo
@@ -149,7 +157,6 @@ class StockInBatch extends Model
 
         return $query->where(function (Builder $q) use ($search) {
             $q->where('batch_number', 'like', "%{$search}%")
-              ->orWhere('grn_number', 'like', "%{$search}%")
               ->orWhere('notes', 'like', "%{$search}%")
               ->orWhereHas('supplier', function (Builder $sq) use ($search) {
                   $sq->where('name', 'like', "%{$search}%")

@@ -39,7 +39,7 @@ class QualityInspectionController extends Controller implements HasMiddleware
         try {
             $perPage = $request->get('per_page', 15);
             $query = QualityInspection::with([
-                'stockInBatch:id,batch_number,grn_number',
+                'stockInBatch:id,batch_number',
                 'stockBag:id,bag_code,bag_number',
                 'itemType:id,name,code',
                 'itemVariety:id,name,code',
@@ -146,7 +146,7 @@ class QualityInspectionController extends Controller implements HasMiddleware
             $this->logActivity('CREATE', 'QualityInspection', "Created quality inspection for {$targetStr} with result: {$inspection->inspection_result}", $validated);
 
             $inspection->load([
-                'stockInBatch:id,batch_number,grn_number',
+                'stockInBatch:id,batch_number',
                 'stockBag:id,bag_code,bag_number',
                 'itemType:id,name,code',
                 'itemVariety:id,name,code',
@@ -174,7 +174,7 @@ class QualityInspectionController extends Controller implements HasMiddleware
     {
         try {
             $inspection = QualityInspection::with([
-                'stockInBatch:id,batch_number,grn_number,received_date',
+                'stockInBatch:id,batch_number,received_date',
                 'stockBag:id,bag_code,bag_number,bag_weight,status',
                 'itemType:id,name,code',
                 'itemVariety:id,name,code,slug',

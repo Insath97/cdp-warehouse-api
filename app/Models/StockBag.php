@@ -89,6 +89,73 @@ class StockBag extends Model
                 $bag->total_sales_amount = $weight * $sPrice;
             }
         });
+
+        static::saved(function ($bag) {
+            $bag->recalculateAggregates();
+        });
+
+        static::deleted(function ($bag) {
+            $bag->recalculateAggregates();
+        });
+    }
+
+    /**
+     * Recalculate parent item and batch aggregates.
+     */
+    public function recalculateAggregates()
+    {
+        // 1. Recalculate parent StockInBatchItem
+        if ($this->stock_in_batch_item_id) {
+            $item = StockInBatchItem::find($this->stock_in_batch_item_id);
+            if ($item) {
+                $qtyBags = self::where('stock_in_batch_item_id', $item->id)->count();
+                $totalWeight = self::where('stock_in_batch_item_id', $item->id)->sum('bag_weight');
+                $totalPrice = self::where('stock_in_batch_item_id', $item->id)->sum('total_price');
+                $remainingQty = self::where('stock_in_batch_item_id', $item->id)->where('status', 'in_stock')->count();
+                $remainingWeight = self::where('stock_in_batch_item_id', $item->id)->where('status', 'in_stock')->sum('bag_weight');
+
+                $item->update([
+                    'quantity_bags' => $qtyBags,
+                    'total_weight' => $totalWeight,
+                    'unit_weight' => $qtyBags > 0 ? ($totalWeight / $qtyBags) : 0,
+                    'total_price' => $totalPrice,
+                    'remaining_quantity_bags' => $remainingQty,
+                    'remaining_weight' => $remainingWeight,
+                ]);
+            }
+        }
+
+        // 2. Recalculate parent StockInBatch
+        if ($this->stock_in_batch_id) {
+            $batch = StockInBatch::find($this->stock_in_batch_id);
+            if ($batch) {
+                $totalBags = self::where('stock_in_batch_id', $batch->id)->count();
+                $netWeight = self::where('stock_in_batch_id', $batch->id)->sum('bag_weight');
+                $totalAmount = self::where('stock_in_batch_id', $batch->id)->sum('total_price');
+
+                $updateData = [
+                    'total_bags' => $totalBags,
+                    'net_weight' => $netWeight,
+                    'total_amount' => $totalAmount,
+                ];
+
+                if ($batch->type === 'direct') {
+                    $updateData['gross_weight'] = $netWeight;
+                }
+
+                $batch->update($updateData);
+
+                // 3. Synchronize Receipt
+                $receipt = Receipt::where('stock_in_batch_id', $batch->id)->first();
+                if ($receipt) {
+                    $receipt->update([
+                        'total_bags' => $totalBags,
+                        'total_weight' => $netWeight,
+                        'total_amount' => $totalAmount,
+                    ]);
+                }
+            }
+        }
     }
 
     /* Relationships */
@@ -163,8 +230,7 @@ class StockBag extends Model
               ->orWhere('location_id', 'like', "%{$search}%")
               ->orWhere('notes', 'like', "%{$search}%")
               ->orWhereHas('stockInBatch', function (Builder $bq) use ($search) {
-                  $bq->where('batch_number', 'like', "%{$search}%")
-                    ->orWhere('grn_number', 'like', "%{$search}%");
+                  $bq->where('batch_number', 'like', "%{$search}%");
               });
         });
     }

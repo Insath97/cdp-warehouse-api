@@ -18,8 +18,7 @@ use App\Http\Controllers\V1\VehicleController;
 use App\Http\Controllers\V1\VehicleLogController;
 use App\Http\Controllers\V1\SupplierController;
 use App\Http\Controllers\V1\WarehouseController;
-use App\Http\Controllers\V1\StockInBatchController;
-use App\Http\Controllers\V1\DirectStockInController;
+use App\Http\Controllers\V1\StockInController;
 use App\Http\Controllers\V1\ReceiptController;
 use App\Http\Controllers\V1\StockBagController;
 use App\Http\Controllers\V1\QualityInspectionController;
@@ -28,13 +27,14 @@ use App\Http\Controllers\V1\BuyerController;
 use App\Http\Controllers\V1\InvoiceController;
 use App\Http\Controllers\V1\StockDispatchController;
 use App\Http\Controllers\V1\BarcodeTokenController;
-use App\Http\Controllers\V1\InventoryReportController;
 use App\Http\Controllers\V1\DatabaseController;
 use App\Http\Controllers\V1\DashboardController;
 use App\Http\Controllers\V1\ImportController;
 use App\Http\Controllers\V1\SmsController;
 use App\Http\Controllers\V1\SettingController;
 use App\Http\Controllers\V1\ReportController;
+use App\Http\Controllers\V1\PurchaseOrderController;
+use App\Http\Controllers\V1\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 /* public routes */
@@ -164,15 +164,28 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
     });
     Route::apiResource('warehouses', WarehouseController::class);
 
-    // Stock In Batches
-    Route::prefix('stock-in-batches')->group(function () {
-        Route::get('list', [StockInBatchController::class, 'getActiveList']);
-        Route::patch('{id}/status', [StockInBatchController::class, 'updateStatus']);
+    // Purchase Orders
+    Route::prefix('purchase-orders')->group(function () {
+        Route::get('list', [PurchaseOrderController::class, 'getActiveList']);
+        Route::patch('{id}/bargain', [PurchaseOrderController::class, 'bargain']);
+        Route::patch('{id}/verify', [PurchaseOrderController::class, 'verify']);
+        Route::post('{id}/payment', [PurchaseOrderController::class, 'updatePayment']);
     });
-    Route::apiResource('stock-in-batches', StockInBatchController::class);
+    Route::apiResource('purchase-orders', PurchaseOrderController::class);
 
-    // Direct Stock-ins (nested flow)
-    Route::apiResource('direct-stock-ins', DirectStockInController::class)->except(['destroy']);
+    // Notifications
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [NotificationController::class, 'index']);
+        Route::patch('{id}/read', [NotificationController::class, 'markAsRead']);
+        Route::post('read-all', [NotificationController::class, 'markAllAsRead']);
+    });
+
+    // Stock In Batches consolidated
+    Route::prefix('stock-ins')->group(function () {
+        Route::get('list', [StockInController::class, 'getActiveList']);
+        Route::patch('{id}/status', [StockInController::class, 'updateStatus']);
+    });
+    Route::apiResource('stock-ins', StockInController::class);
 
     // Receipts
     Route::prefix('receipts')->group(function () {
@@ -218,17 +231,13 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
     });
     Route::apiResource('barcode-tokens', BarcodeTokenController::class)->except(['update', 'destroy']);
 
-    // Inventory Reports
-    Route::prefix('inventory-reports')->group(function () {
-        Route::get('balance', [InventoryReportController::class, 'balance']);
-        Route::get('valuation', [InventoryReportController::class, 'valuation']);
-        Route::get('aging', [InventoryReportController::class, 'aging']);
-        Route::get('alerts', [InventoryReportController::class, 'alerts']);
-    });
-
     // Reports
     Route::prefix('reports')->group(function () {
         Route::get('batch-wise', [ReportController::class, 'batchWise']);
+        Route::get('balance', [ReportController::class, 'balance']);
+        Route::get('valuation', [ReportController::class, 'valuation']);
+        Route::get('aging', [ReportController::class, 'aging']);
+        Route::get('alerts', [ReportController::class, 'alerts']);
     });
 
     // Activity Logs (Read-only: Get All and Get By ID)
@@ -268,4 +277,11 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
 
     // Database Export
     Route::get('database/export', [DatabaseController::class, 'export']);
+
+    // Data Export (Real data as CSV/Excel)
+    Route::prefix('export')->group(function () {
+        Route::get('tables', [DatabaseController::class, 'exportData']);
+        Route::get('{table}', [DatabaseController::class, 'exportTable']);
+        Route::get('all/excel', [DatabaseController::class, 'exportAllTables']);
+    });
 });

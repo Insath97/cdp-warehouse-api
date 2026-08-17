@@ -1,0 +1,692 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Branch;
+use App\Models\Country;
+use App\Models\District;
+use App\Models\ItemType;
+use App\Models\ItemVariety;
+use App\Models\Province;
+use App\Models\StockInBatch;
+use App\Models\StockBag;
+use App\Models\Supplier;
+use App\Models\User;
+use App\Models\Warehouse;
+use App\Models\PurchaseOrder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class StockInTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private $user;
+    private $warehouse;
+    private $supplier;
+    private $itemType;
+    private $itemVariety;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Run seeders for SQLite in-memory testing DB
+        $this->seed(\Database\Seeders\PermissionsSeeder::class);
+        $this->seed(\Database\Seeders\UserSeeder::class);
+
+        // Find the seeded user and authenticate
+        $this->user = User::where('email', 'dev@localhost.com')->first();
+        $token = auth('api')->login($this->user);
+        $this->withHeader('Authorization', 'Bearer ' . $token);
+
+        // Setup master data
+        $country = Country::create([
+            'name' => 'Sri Lanka',
+            'code' => 'SL',
+            'is_active' => true,
+        ]);
+
+        $province = Province::create([
+            'name' => 'Southern',
+            'code' => 'SP',
+            'country_id' => $country->id,
+            'is_active' => true,
+        ]);
+
+        $district = District::create([
+            'name' => 'Matara',
+            'code' => 'MH',
+            'province_id' => $province->id,
+            'is_active' => true,
+        ]);
+
+        $branch = Branch::create([
+            'province_id' => $province->id,
+            'district_id' => $district->id,
+            'name' => 'Colombo Main',
+            'code' => 'CM-001',
+            'address_line1' => 'Galle Rd',
+            'city' => 'Colombo',
+            'phone_primary' => '0112223334',
+            'opening_date' => '2026-01-01',
+            'branch_type' => 'main',
+            'is_active' => true,
+        ]);
+
+        $this->warehouse = Warehouse::create([
+            'branch_id' => $branch->id,
+            'name' => 'Warehouse Alpha',
+            'code' => 'WH-ALP',
+            'phone_primary' => '0112223335',
+            'address_line1' => 'Duplication Road',
+            'city' => 'Colombo',
+            'is_active' => true,
+        ]);
+
+        $this->supplier = Supplier::create([
+            'code' => 'SUP-001',
+            'name' => 'Supplier One',
+            'phone_primary' => '1234567890',
+            'address_line1' => 'Galle Road',
+            'city' => 'Matara',
+            'country_id' => $country->id,
+            'district_id' => $district->id,
+            'is_active' => true,
+        ]);
+
+        $this->itemType = ItemType::create([
+            'name' => 'Paddy',
+            'code' => 'PDY',
+            'description' => 'Paddy grain',
+            'is_active' => true,
+        ]);
+
+        $this->itemVariety = ItemVariety::create([
+            'item_type_id' => $this->itemType->id,
+            'name' => 'Samba',
+            'code' => 'PDY-SAM',
+            'is_active' => true,
+        ]);
+    }
+
+    /**
+     * Test creating a supplier stock-in batch.
+     */
+    public function test_can_create_supplier_stock_in()
+    {
+        $payload = [
+            'type' => 'supplier',
+            'warehouse_id' => $this->warehouse->id,
+            'supplier_id' => $this->supplier->id,
+            'received_date' => '2026-08-10',
+            'status' => 'pending',
+            'items' => [
+                [
+                    'item_type_id' => $this->itemType->id,
+                    'item_variety_id' => $this->itemVariety->id,
+                    'quantity_bags' => 10,
+                    'unit_weight' => 50.00,
+                    'unit_price' => 100.00,
+                ]
+            ]
+        ];
+
+        $response = $this->postJson('/api/v1/stock-ins', $payload);
+
+        $response->assertStatus(201)
+            ->assertJson([
+                'status' => 'success',
+                'message' => 'Stock in batch created successfully'
+            ]);
+
+        $this->assertDatabaseHas('stock_in_batches', [
+            'type' => 'supplier',
+            'supplier_id' => $this->supplier->id,
+            'warehouse_id' => $this->warehouse->id,
+            'total_bags' => 10,
+        ]);
+    }
+
+    /**
+     * Test creating a direct stock-in batch which creates nested bags.
+     */
+    public function test_can_create_direct_stock_in_with_bags()
+    {
+        $payload = [
+            'type' => 'direct',
+            'warehouse_id' => $this->warehouse->id,
+            'received_date' => '2026-08-10',
+            'vehicle_number' => 'WP-CAB-1234',
+            'vehicle_type' => 'lorry',
+            'driver_name' => 'John Doe',
+            'items' => [
+                [
+                    'item_type_id' => $this->itemType->id,
+                    'item_variety_id' => $this->itemVariety->id,
+                    'unit_price' => 120.00,
+                    'bags' => [
+                        [
+                            'bag_weight' => 45.50,
+                            'location_id' => 'LOC-A1',
+                        ],
+                        [
+                            'bag_weight' => 46.00,
+                            'location_id' => 'LOC-A2',
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $response = $this->postJson('/api/v1/stock-ins', $payload);
+
+        $response->assertStatus(201)
+            ->assertJson([
+                'status' => 'success',
+                'message' => 'Stock in batch created successfully'
+            ]);
+
+        $this->assertDatabaseHas('stock_in_batches', [
+            'type' => 'direct',
+            'supplier_id' => null,
+            'total_bags' => 2,
+            'net_weight' => 91.50, // 45.5 + 46.0
+        ]);
+
+        $this->assertDatabaseHas('stock_bags', [
+            'bag_weight' => 45.50,
+            'location_id' => 'LOC-A1',
+        ]);
+        $this->assertDatabaseHas('stock_bags', [
+            'bag_weight' => 46.00,
+            'location_id' => 'LOC-A2',
+        ]);
+    }
+
+    /**
+     * Test validation rules for supplier type.
+     */
+    public function test_supplier_stock_in_requires_supplier_id()
+    {
+        $payload = [
+            'type' => 'supplier',
+            'warehouse_id' => $this->warehouse->id,
+            'received_date' => '2026-08-10',
+            'items' => [
+                [
+                    'item_type_id' => $this->itemType->id,
+                    'item_variety_id' => $this->itemVariety->id,
+                    'quantity_bags' => 10,
+                ]
+            ]
+        ];
+
+        $response = $this->postJson('/api/v1/stock-ins', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonFragment([
+                'field' => 'supplier_id'
+            ]);
+    }
+
+    /**
+     * Test validation rules for direct type.
+     */
+    public function test_direct_stock_in_requires_bags()
+    {
+        $payload = [
+            'type' => 'direct',
+            'warehouse_id' => $this->warehouse->id,
+            'received_date' => '2026-08-10',
+            'items' => [
+                [
+                    'item_type_id' => $this->itemType->id,
+                    'item_variety_id' => $this->itemVariety->id,
+                    'unit_price' => 120.00,
+                ]
+            ]
+        ];
+
+        $response = $this->postJson('/api/v1/stock-ins', $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonFragment([
+                'field' => 'items.0.bags'
+            ]);
+    }
+
+    /**
+     * Test listing stock-in batches.
+     */
+    public function test_can_get_stock_ins()
+    {
+        // Create one direct and one supplier batch
+        StockInBatch::create([
+            'type' => 'direct',
+            'warehouse_id' => $this->warehouse->id,
+            'received_date' => '2026-08-10',
+            'status' => 'received',
+            'net_weight' => 100,
+            'total_bags' => 2,
+            'total_amount' => 1500,
+            'created_by' => $this->user->id,
+        ]);
+
+        StockInBatch::create([
+            'type' => 'supplier',
+            'supplier_id' => $this->supplier->id,
+            'warehouse_id' => $this->warehouse->id,
+            'received_date' => '2026-08-11',
+            'status' => 'received',
+            'net_weight' => 200,
+            'total_bags' => 4,
+            'total_amount' => 3000,
+            'created_by' => $this->user->id,
+        ]);
+
+        $response = $this->getJson('/api/v1/stock-ins');
+
+        $response->assertStatus(200);
+        $this->assertCount(2, $response->json('data.data'));
+    }
+
+    /**
+     * Test updating a direct stock-in.
+     */
+    public function test_can_update_direct_stock_in()
+    {
+        $batch = StockInBatch::create([
+            'type' => 'direct',
+            'warehouse_id' => $this->warehouse->id,
+            'received_date' => '2026-08-10',
+            'status' => 'received',
+            'net_weight' => 50,
+            'total_bags' => 1,
+            'total_amount' => 100,
+            'created_by' => $this->user->id,
+        ]);
+
+        $item = $batch->items()->create([
+            'item_type_id' => $this->itemType->id,
+            'item_variety_id' => $this->itemVariety->id,
+            'quantity_bags' => 1,
+            'unit_weight' => 50,
+            'total_weight' => 50,
+            'unit_price' => 2,
+            'total_price' => 100,
+            'remaining_quantity_bags' => 1,
+            'remaining_weight' => 50,
+        ]);
+
+        $bag = StockBag::create([
+            'stock_in_batch_id' => $batch->id,
+            'stock_in_batch_item_id' => $item->id,
+            'branch_id' => $this->warehouse->branch_id,
+            'warehouse_id' => $this->warehouse->id,
+            'item_type_id' => $this->itemType->id,
+            'item_variety_id' => $this->itemVariety->id,
+            'bag_weight' => 50.00,
+            'unit_price' => 2.00,
+            'selling_price' => 2.00,
+            'status' => 'in_stock',
+            'created_by' => $this->user->id,
+        ]);
+
+        $payload = [
+            'type' => 'direct',
+            'warehouse_id' => $this->warehouse->id,
+            'received_date' => '2026-08-10',
+            'items' => [
+                [
+                    'id' => $item->id,
+                    'item_type_id' => $this->itemType->id,
+                    'item_variety_id' => $this->itemVariety->id,
+                    'unit_price' => 3.00,
+                    'bags' => [
+                        [
+                            'id' => $bag->id,
+                            'bag_weight' => 60.00, // Updated weight
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $response = $this->putJson("/api/v1/stock-ins/{$batch->id}", $payload);
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('stock_bags', [
+            'id' => $bag->id,
+            'bag_weight' => 60.00,
+            'unit_price' => 3.00,
+        ]);
+    }
+
+    /**
+     * Test that bags are eagerly loaded and returned in index, list, and show responses.
+     */
+    public function test_bags_are_included_in_responses()
+    {
+        $batch = StockInBatch::create([
+            'type' => 'direct',
+            'warehouse_id' => $this->warehouse->id,
+            'received_date' => '2026-08-10',
+            'status' => 'received',
+            'net_weight' => 50,
+            'total_bags' => 1,
+            'total_amount' => 100,
+            'created_by' => $this->user->id,
+        ]);
+
+        $item = $batch->items()->create([
+            'item_type_id' => $this->itemType->id,
+            'item_variety_id' => $this->itemVariety->id,
+            'quantity_bags' => 1,
+            'unit_weight' => 50,
+            'total_weight' => 50,
+            'unit_price' => 2,
+            'total_price' => 100,
+            'remaining_quantity_bags' => 1,
+            'remaining_weight' => 50,
+        ]);
+
+        $bag = StockBag::create([
+            'stock_in_batch_id' => $batch->id,
+            'stock_in_batch_item_id' => $item->id,
+            'branch_id' => $this->warehouse->branch_id,
+            'warehouse_id' => $this->warehouse->id,
+            'item_type_id' => $this->itemType->id,
+            'item_variety_id' => $this->itemVariety->id,
+            'bag_weight' => 50.00,
+            'unit_price' => 2.00,
+            'selling_price' => 2.00,
+            'status' => 'in_stock',
+            'created_by' => $this->user->id,
+        ]);
+
+        // 1. Verify show endpoint response structure contains bags & items.bags
+        $responseShow = $this->getJson("/api/v1/stock-ins/{$batch->id}");
+        $responseShow->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'bags',
+                    'items' => [
+                        '*' => [
+                            'bags'
+                        ]
+                    ]
+                ]
+            ]);
+        $this->assertNotEmpty($responseShow->json('data.bags'));
+        $this->assertNotEmpty($responseShow->json('data.items.0.bags'));
+
+        // 2. Verify index endpoint response structure contains bags & items.bags
+        $responseIndex = $this->getJson('/api/v1/stock-ins');
+        $responseIndex->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'data' => [
+                        '*' => [
+                            'bags',
+                            'items' => [
+                                '*' => [
+                                    'bags'
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]);
+
+        // 3. Verify getActiveList (list) endpoint response structure contains bags & items.bags
+        $responseList = $this->getJson('/api/v1/stock-ins/list');
+        $responseList->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => [
+                        'bags',
+                        'items' => [
+                            '*' => [
+                                'bags'
+                            ]
+                        ]
+                    ]
+                ]
+            ]);
+    }
+
+    /**
+     * Test appending 50 bags to a direct batch that already has 100 bags (totaling 150 bags).
+     */
+    public function test_can_append_bags_to_existing_direct_batch()
+    {
+        // 1. Create a batch with 100 bags initially
+        $batch = StockInBatch::create([
+            'type' => 'direct',
+            'warehouse_id' => $this->warehouse->id,
+            'received_date' => '2026-08-10',
+            'status' => 'received',
+            'net_weight' => 5000.00,
+            'total_bags' => 100,
+            'total_amount' => 10000.00,
+            'created_by' => $this->user->id,
+        ]);
+
+        $item = $batch->items()->create([
+            'item_type_id' => $this->itemType->id,
+            'item_variety_id' => $this->itemVariety->id,
+            'quantity_bags' => 100,
+            'unit_weight' => 50.00,
+            'total_weight' => 5000.00,
+            'unit_price' => 2.00,
+            'total_price' => 10000.00,
+            'remaining_quantity_bags' => 100,
+            'remaining_weight' => 5000.00,
+        ]);
+
+        // Add 100 bags using database insertion
+        for ($i = 1; $i <= 100; $i++) {
+            StockBag::create([
+                'stock_in_batch_id' => $batch->id,
+                'stock_in_batch_item_id' => $item->id,
+                'branch_id' => $this->warehouse->branch_id,
+                'warehouse_id' => $this->warehouse->id,
+                'item_type_id' => $this->itemType->id,
+                'item_variety_id' => $this->itemVariety->id,
+                'bag_weight' => 50.00,
+                'unit_price' => 2.00,
+                'selling_price' => 2.00,
+                'status' => 'in_stock',
+                'created_by' => $this->user->id,
+            ]);
+        }
+
+        // Verify initial setup has 100 bags
+        $this->assertEquals(100, StockBag::where('stock_in_batch_id', $batch->id)->count());
+
+        // 2. Define payload with append = true, submitting 50 additional bags
+        $additionalBags = [];
+        for ($j = 1; $j <= 50; $j++) {
+            $additionalBags[] = [
+                'bag_weight' => 50.00,
+            ];
+        }
+
+        $payload = [
+            'append' => true,
+            'warehouse_id' => $this->warehouse->id,
+            'received_date' => '2026-08-11',
+            'items' => [
+                [
+                    'id' => $item->id,
+                    'item_type_id' => $this->itemType->id,
+                    'item_variety_id' => $this->itemVariety->id,
+                    'unit_price' => 2.00,
+                    'bags' => $additionalBags,
+                ]
+            ]
+        ];
+
+        // 3. Make PUT request
+        $response = $this->putJson("/api/v1/stock-ins/{$batch->id}", $payload);
+
+        $response->assertStatus(200);
+
+        // 4. Assert totals in the database
+        $this->assertEquals(150, StockBag::where('stock_in_batch_id', $batch->id)->count());
+        $this->assertDatabaseHas('stock_in_batches', [
+            'id' => $batch->id,
+            'total_bags' => 150,
+            'net_weight' => 7500.00, // (100 * 50) + (50 * 50) = 7500
+            'total_amount' => 15000.00, // 7500 * 2 = 15000
+        ]);
+
+        $this->assertDatabaseHas('stock_in_batch_items', [
+            'id' => $item->id,
+            'quantity_bags' => 150,
+            'total_weight' => 7500.00,
+            'total_price' => 15000.00,
+        ]);
+    }
+
+    /**
+     * Test appending bags in supplier flow.
+     */
+    public function test_can_append_to_existing_supplier_batch()
+    {
+        $batch = StockInBatch::create([
+            'type' => 'supplier',
+            'warehouse_id' => $this->warehouse->id,
+            'supplier_id' => $this->supplier->id,
+            'received_date' => '2026-08-10',
+            'status' => 'received',
+            'net_weight' => 5000.00,
+            'total_bags' => 100,
+            'total_amount' => 10000.00,
+            'created_by' => $this->user->id,
+        ]);
+
+        $item = $batch->items()->create([
+            'item_type_id' => $this->itemType->id,
+            'item_variety_id' => $this->itemVariety->id,
+            'quantity_bags' => 100,
+            'unit_weight' => 50.00,
+            'total_weight' => 5000.00,
+            'unit_price' => 2.00,
+            'total_price' => 10000.00,
+            'remaining_quantity_bags' => 100,
+            'remaining_weight' => 5000.00,
+        ]);
+
+        $payload = [
+            'append' => true,
+            'warehouse_id' => $this->warehouse->id,
+            'supplier_id' => $this->supplier->id,
+            'received_date' => '2026-08-11',
+            'items' => [
+                [
+                    'item_type_id' => $this->itemType->id,
+                    'item_variety_id' => $this->itemVariety->id,
+                    'quantity_bags' => 50,
+                    'unit_weight' => 50.00,
+                    'unit_price' => 2.00,
+                ]
+            ]
+        ];
+
+        $response = $this->putJson("/api/v1/stock-ins/{$batch->id}", $payload);
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('stock_in_batches', [
+            'id' => $batch->id,
+            'total_bags' => 150,
+            'net_weight' => 7500.00,
+            'total_amount' => 15000.00,
+        ]);
+
+        $this->assertDatabaseHas('stock_in_batch_items', [
+            'id' => $item->id,
+            'quantity_bags' => 150,
+            'total_weight' => 7500.00,
+            'total_price' => 15000.00,
+        ]);
+    }
+
+    /**
+     * Test creating a stock-in batch connected to an approved and paid Purchase Order.
+     */
+    public function test_create_stock_in_with_purchase_order()
+    {
+        // 1. Create a verified and paid PO
+        $po = PurchaseOrder::create([
+            'po_number' => 'PO-STK-CONN',
+            'supplier_id' => $this->supplier->id,
+            'warehouse_id' => $this->warehouse->id,
+            'item_variety_id' => $this->itemVariety->id,
+            'variety_type' => 'dry',
+            'purchase_price_per_kg' => 110.00,
+            'number_of_bags' => 100,
+            'total_weights' => 5000.00,
+            'total_sales_price' => 550000.00,
+            'status' => 'verified',
+            'payment_status' => 'paid',
+            'created_by' => $this->user->id,
+        ]);
+
+        $payload = [
+            'type' => 'supplier',
+            'purchase_order_id' => $po->id,
+            'warehouse_id' => $this->warehouse->id,
+            'received_date' => '2026-08-14',
+            'items' => [
+                [
+                    'item_type_id' => $this->itemType->id,
+                    'item_variety_id' => $this->itemVariety->id,
+                    'quantity_bags' => 100,
+                    'unit_weight' => 50.00,
+                    'total_weight' => 5000.00,
+                    'unit_price' => 110.00,
+                    'total_price' => 550000.00,
+                ]
+            ]
+        ];
+
+        // Ensure we can create StockIn without supplying supplier_id explicitly
+        $response = $this->postJson('/api/v1/stock-ins', $payload);
+        $response->assertStatus(201);
+
+        $this->assertDatabaseHas('stock_in_batches', [
+            'purchase_order_id' => $po->id,
+            'supplier_id' => $this->supplier->id, // Resolved from PO
+            'warehouse_id' => $this->warehouse->id,
+        ]);
+        
+        // 2. Test fails if PO is not paid or verified
+        $poNotPaid = PurchaseOrder::create([
+            'po_number' => 'PO-STK-FAIL',
+            'supplier_id' => $this->supplier->id,
+            'warehouse_id' => $this->warehouse->id,
+            'item_variety_id' => $this->itemVariety->id,
+            'variety_type' => 'dry',
+            'purchase_price_per_kg' => 110.00,
+            'number_of_bags' => 100,
+            'total_weights' => 5000.00,
+            'total_sales_price' => 550000.00,
+            'status' => 'approved',
+            'payment_status' => 'pending',
+            'created_by' => $this->user->id,
+        ]);
+
+        $payloadFail = $payload;
+        $payloadFail['purchase_order_id'] = $poNotPaid->id;
+
+        $response = $this->postJson('/api/v1/stock-ins', $payloadFail);
+        $response->assertStatus(400);
+        $response->assertJsonFragment([
+            'message' => 'Purchase order must be verified and paid.',
+        ]);
+    }
+}

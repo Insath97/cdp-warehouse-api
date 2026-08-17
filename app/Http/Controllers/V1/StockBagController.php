@@ -97,7 +97,6 @@ class StockBagController extends Controller implements HasMiddleware
                 'data' => [
                     'batch_id' => $batch->id,
                     'batch_number' => $batch->batch_number,
-                    'grn_number' => $batch->grn_number,
                     'received_date' => $batch->received_date,
                     'supplier' => $batch->supplier,
                     'warehouse' => $batch->warehouse,
@@ -123,7 +122,7 @@ class StockBagController extends Controller implements HasMiddleware
         try {
             $perPage = $request->get('per_page', 15);
             $query = StockBag::with([
-                'stockInBatch:id,batch_number,grn_number',
+                'stockInBatch:id,batch_number',
                 'warehouse:id,code,name',
                 'branch:id,code,name',
                 'supplier:id,code,name',
@@ -369,7 +368,7 @@ class StockBagController extends Controller implements HasMiddleware
     {
         try {
             $bag = StockBag::with([
-                'stockInBatch:id,batch_number,grn_number,received_date',
+                'stockInBatch:id,batch_number,received_date',
                 'stockInBatchItem',
                 'branch:id,code,name',
                 'warehouse:id,code,name,city',

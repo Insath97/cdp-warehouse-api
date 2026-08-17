@@ -37,6 +37,8 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         'email_verified_at',
         'email_verification_token',
         'email_verification_token_expires_at',
+        'enable_email_notification',
+        'enable_system_notification',
     ];
 
     /**
@@ -63,6 +65,8 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
             'last_login_at' => 'datetime',
             'is_active' => 'boolean',
             'can_login' => 'boolean',
+            'enable_email_notification' => 'boolean',
+            'enable_system_notification' => 'boolean',
         ];
     }
 

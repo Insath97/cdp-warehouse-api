@@ -109,8 +109,7 @@ class QualityInspection extends Model
               ->orWhere('grade', 'like', "%{$search}%")
               ->orWhere('inspection_result', 'like', "%{$search}%")
               ->orWhereHas('stockInBatch', function (Builder $bq) use ($search) {
-                  $bq->where('batch_number', 'like', "%{$search}%")
-                    ->orWhere('grn_number', 'like', "%{$search}%");
+                  $bq->where('batch_number', 'like', "%{$search}%");
               })
               ->orWhereHas('stockBag', function (Builder $bgq) use ($search) {
                   $bgq->where('bag_code', 'like', "%{$search}%");
