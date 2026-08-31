@@ -136,11 +136,15 @@ class PurchaseOrderController extends Controller implements HasMiddleware
             $data['status'] = 'pending_approval';
             $data['payment_status'] = 'pending';
 
-            $data['total_sales_price'] = $data['purchase_price_per_kg'] * $data['total_weights'];
-            if (isset($data['market_price_per_kg'])) {
+            if (isset($data['purchase_price_per_kg']) && isset($data['total_weights'])) {
+                $data['total_sales_price'] = $data['purchase_price_per_kg'] * $data['total_weights'];
+            } else {
+                $data['total_sales_price'] = $data['total_sales_price'] ?? null;
+            }
+            if (isset($data['market_price_per_kg']) && isset($data['total_weights'])) {
                 $data['total_market_price'] = $data['market_price_per_kg'] * $data['total_weights'];
             } else {
-                $data['total_market_price'] = null;
+                $data['total_market_price'] = $data['total_market_price'] ?? null;
             }
 
             $po = PurchaseOrder::create($data);
@@ -293,8 +297,8 @@ class PurchaseOrderController extends Controller implements HasMiddleware
             $marketPrice = array_key_exists('market_price_per_kg', $data) ? $data['market_price_per_kg'] : $po->market_price_per_kg;
             $totalWeights = $data['total_weights'] ?? $po->total_weights;
 
-            $data['total_sales_price'] = $purchasePrice * $totalWeights;
-            if ($marketPrice !== null) {
+            $data['total_sales_price'] = ($purchasePrice !== null && $totalWeights !== null) ? $purchasePrice * $totalWeights : null;
+            if ($marketPrice !== null && $totalWeights !== null) {
                 $data['total_market_price'] = $marketPrice * $totalWeights;
             } else {
                 $data['total_market_price'] = null;
@@ -494,7 +498,9 @@ class PurchaseOrderController extends Controller implements HasMiddleware
                 case 'suggest_price':
                     $po->status = $isCreator ? 'pending_approval' : 'price_suggested';
                     $po->purchase_price_per_kg = $data['purchase_price_per_kg'];
-                    $po->total_sales_price = $data['purchase_price_per_kg'] * $po->total_weights;
+                    $po->total_sales_price = ($data['purchase_price_per_kg'] !== null && $po->total_weights !== null)
+                        ? $data['purchase_price_per_kg'] * $po->total_weights
+                        : null;
                     break;
             }
 
