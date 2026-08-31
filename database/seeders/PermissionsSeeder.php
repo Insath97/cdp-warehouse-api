@@ -251,7 +251,9 @@ class PermissionsSeeder extends Seeder
             ['name' => 'DailyPrice Create', 'group_name' => 'Daily Price Management Permissions'],
             ['name' => 'DailyPrice Update', 'group_name' => 'Daily Price Management Permissions'],
             ['name' => 'DailyPrice Delete', 'group_name' => 'Daily Price Management Permissions'],
-            ['name' => 'DailyPriceReport Index', 'group_name' => 'Daily Price Management Permissions'],
+
+            /* Daily Price Report Management */
+            ['name' => 'DailyPriceReport Index', 'group_name' => 'Daily Price Report Management Permissions'],
 
             /* Notification Management */
             ['name' => 'Notification Index', 'group_name' => 'Notification Management Permissions'],

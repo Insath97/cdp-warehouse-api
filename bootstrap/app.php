@@ -59,6 +59,16 @@ return Application::configure(basePath: dirname(__DIR__))
             ], 422);
         });
 
+        // Handle Spatie UnauthorizedException (Forbidden)
+        $exceptions->render(function (\Spatie\Permission\Exceptions\UnauthorizedException $e, Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'message' => 'User does not have the right permissions.',
+                    'error' => $e->getMessage(),
+                ], 403);
+            }
+        });
+
         // Catch-all exception format for API
         $exceptions->render(function (\PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException $e, Request $request) {
             if ($request->is('api/*')) {

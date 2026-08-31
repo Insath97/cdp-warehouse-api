@@ -237,11 +237,14 @@ class DailyPriceReportTest extends TestCase
             'password' => bcrypt('password123'),
             'is_active' => true,
             'can_login' => true,
+            'user_scope' => 'warehouse',
         ]);
 
-        $token = auth('api')->login($restrictedUser);
+        $token = auth('api')->tokenById($restrictedUser->id);
+        auth('api')->setUser($restrictedUser);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+        $response = $this->flushHeaders()
+            ->withHeader('Authorization', 'Bearer ' . $token)
             ->getJson('/api/v1/reports/daily-prices');
 
         $response->assertStatus(403);

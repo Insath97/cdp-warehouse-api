@@ -23,11 +23,11 @@ class DailyPriceController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:DailyPrice Index', ['only' => ['index', 'show', 'getTodayPrice']]),
-            new Middleware('permission:DailyPrice List', ['only' => ['getActiveList']]),
-            new Middleware('permission:DailyPrice Create', ['only' => ['store']]),
-            new Middleware('permission:DailyPrice Update', ['only' => ['update']]),
-            new Middleware('permission:DailyPrice Delete', ['only' => ['destroy']]),
+            (new Middleware('permission:DailyPrice Index'))->only(['index', 'show', 'getTodayPrice']),
+            (new Middleware('permission:DailyPrice List'))->only(['getActiveList']),
+            (new Middleware('permission:DailyPrice Create'))->only(['store']),
+            (new Middleware('permission:DailyPrice Update'))->only(['update']),
+            (new Middleware('permission:DailyPrice Delete'))->only(['destroy']),
         ];
     }
 

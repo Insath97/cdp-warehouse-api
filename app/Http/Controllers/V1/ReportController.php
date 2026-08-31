@@ -25,9 +25,9 @@ class ReportController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:Report Index', ['only' => ['batchWise']]),
-            new Middleware('permission:InventoryReport Index', ['only' => ['balance', 'valuation', 'aging', 'alerts']]),
-            new Middleware('permission:DailyPriceReport Index', ['only' => ['dailyPrices']]),
+            (new Middleware('permission:Report Index'))->only(['batchWise']),
+            (new Middleware('permission:InventoryReport Index'))->only(['balance', 'valuation', 'aging', 'alerts']),
+            (new Middleware('permission:DailyPriceReport Index'))->only(['dailyPrices']),
         ];
     }
 

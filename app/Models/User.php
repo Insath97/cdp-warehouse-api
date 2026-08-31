@@ -15,6 +15,8 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
 {
     use HasFactory, Notifiable, HasRoles;
 
+    protected $guard_name = 'api';
+
     /**
      * The attributes that are mass assignable.
      *
