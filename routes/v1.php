@@ -35,6 +35,7 @@ use App\Http\Controllers\V1\SettingController;
 use App\Http\Controllers\V1\ReportController;
 use App\Http\Controllers\V1\PurchaseOrderController;
 use App\Http\Controllers\V1\NotificationController;
+use App\Http\Controllers\V1\DailyPriceController;
 use Illuminate\Support\Facades\Route;
 
 /* public routes */
@@ -126,6 +127,12 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
         Route::patch('{id}/toggle-status', [ItemVarietyController::class, 'toggleStatus']);
     });
     Route::apiResource('item-varieties', ItemVarietyController::class);
+
+    // Daily Prices
+    Route::prefix('daily-prices')->group(function () {
+        Route::get('today', [DailyPriceController::class, 'getTodayPrice']);
+    });
+    Route::apiResource('daily-prices', DailyPriceController::class);
 
     // Banks
     Route::prefix('banks')->group(function () {

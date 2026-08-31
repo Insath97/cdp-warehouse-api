@@ -245,6 +245,13 @@ class PermissionsSeeder extends Seeder
             ['name' => 'PurchaseOrder Approve', 'group_name' => 'Purchase Order Management Permissions'],
             ['name' => 'PurchaseOrder Verify', 'group_name' => 'Purchase Order Management Permissions'],
 
+            /* Daily Price Management */
+            ['name' => 'DailyPrice Index', 'group_name' => 'Daily Price Management Permissions'],
+            ['name' => 'DailyPrice List', 'group_name' => 'Daily Price Management Permissions'],
+            ['name' => 'DailyPrice Create', 'group_name' => 'Daily Price Management Permissions'],
+            ['name' => 'DailyPrice Update', 'group_name' => 'Daily Price Management Permissions'],
+            ['name' => 'DailyPrice Delete', 'group_name' => 'Daily Price Management Permissions'],
+
             /* Notification Management */
             ['name' => 'Notification Index', 'group_name' => 'Notification Management Permissions'],
         ];
