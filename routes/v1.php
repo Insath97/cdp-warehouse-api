@@ -245,6 +245,7 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
         Route::get('valuation', [ReportController::class, 'valuation']);
         Route::get('aging', [ReportController::class, 'aging']);
         Route::get('alerts', [ReportController::class, 'alerts']);
+        Route::get('daily-prices', [ReportController::class, 'dailyPrices']);
     });
 
     // Activity Logs (Read-only: Get All and Get By ID)

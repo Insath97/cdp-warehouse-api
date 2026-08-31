@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GetDailyPriceReportRequest;
 use App\Http\Requests\GetInventoryReportRequest;
 use App\Http\Requests\GetReportRequest;
+use App\Models\DailyPrice;
 use App\Models\QualityInspection;
 use App\Models\StockBag;
 use App\Models\StockInBatch;
@@ -25,6 +27,7 @@ class ReportController extends Controller implements HasMiddleware
         return [
             new Middleware('permission:Report Index', ['only' => ['batchWise']]),
             new Middleware('permission:InventoryReport Index', ['only' => ['balance', 'valuation', 'aging', 'alerts']]),
+            new Middleware('permission:DailyPriceReport Index', ['only' => ['dailyPrices']]),
         ];
     }
 
@@ -558,6 +561,290 @@ class ReportController extends Controller implements HasMiddleware
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to retrieve stock alerts',
+                'error' => config('app.debug') ? $th->getMessage() : 'Internal server error',
+            ], 500);
+        }
+    }
+
+    /**
+     * Daily Price report with daily, monthly, yearly aggregations, variety breakdown, and price trends.
+     */
+    public function dailyPrices(GetDailyPriceReportRequest $request)
+    {
+        try {
+            $validated = $request->validated();
+            $groupBy = $validated['group_by'] ?? 'daily';
+
+            $query = DailyPrice::with([
+                'itemVariety:id,item_type_id,name,code,slug',
+                'itemVariety.itemType:id,name,code',
+            ]);
+
+            // Date Filters
+            if (!empty($validated['start_date'])) {
+                $query->whereDate('date', '>=', $validated['start_date']);
+            }
+            if (!empty($validated['end_date'])) {
+                $query->whereDate('date', '<=', $validated['end_date']);
+            }
+            if (!empty($validated['year'])) {
+                $query->whereYear('date', $validated['year']);
+            }
+            if (!empty($validated['month'])) {
+                $query->whereMonth('date', $validated['month']);
+            }
+
+            // Variety Filters
+            if (!empty($validated['item_variety_id'])) {
+                $query->where('item_variety_id', $validated['item_variety_id']);
+            } elseif (!empty($validated['item_variety_ids']) && is_array($validated['item_variety_ids'])) {
+                $query->whereIn('item_variety_id', $validated['item_variety_ids']);
+            }
+
+            // Category / Item Type Filter
+            if (!empty($validated['item_type_id'])) {
+                $query->whereHas('itemVariety', function ($q) use ($validated) {
+                    $q->where('item_type_id', $validated['item_type_id']);
+                });
+            }
+
+            // Price Range Filters
+            if (isset($validated['min_buying_price'])) {
+                $query->where('buying_price', '>=', $validated['min_buying_price']);
+            }
+            if (isset($validated['max_buying_price'])) {
+                $query->where('buying_price', '<=', $validated['max_buying_price']);
+            }
+            if (isset($validated['min_selling_price'])) {
+                $query->where('selling_price', '>=', $validated['min_selling_price']);
+            }
+            if (isset($validated['max_selling_price'])) {
+                $query->where('selling_price', '<=', $validated['max_selling_price']);
+            }
+
+            // Overall Summary Calculations
+            $statsQuery = (clone $query);
+            $stats = $statsQuery->selectRaw('
+                COUNT(*) as total_records,
+                AVG(buying_price) as avg_buying_price,
+                AVG(selling_price) as avg_selling_price,
+                MIN(buying_price) as min_buying_price,
+                MAX(buying_price) as max_buying_price,
+                MIN(selling_price) as min_selling_price,
+                MAX(selling_price) as max_selling_price,
+                AVG(selling_price - buying_price) as avg_margin
+            ')->first();
+
+            $totalRecords = (int) ($stats->total_records ?? 0);
+            $avgBuying = round((float) ($stats->avg_buying_price ?? 0), 2);
+            $avgSelling = round((float) ($stats->avg_selling_price ?? 0), 2);
+            $minBuying = round((float) ($stats->min_buying_price ?? 0), 2);
+            $maxBuying = round((float) ($stats->max_buying_price ?? 0), 2);
+            $minSelling = round((float) ($stats->min_selling_price ?? 0), 2);
+            $maxSelling = round((float) ($stats->max_selling_price ?? 0), 2);
+            $avgMargin = round((float) ($stats->avg_margin ?? 0), 2);
+            $avgMarginPct = $avgBuying > 0 ? round(($avgMargin / $avgBuying) * 100, 2) : 0;
+
+            $summary = [
+                'total_records' => $totalRecords,
+                'avg_buying_price' => $avgBuying,
+                'avg_selling_price' => $avgSelling,
+                'min_buying_price' => $minBuying,
+                'max_buying_price' => $maxBuying,
+                'min_selling_price' => $minSelling,
+                'max_selling_price' => $maxSelling,
+                'avg_margin' => $avgMargin,
+                'avg_margin_percentage' => $avgMarginPct,
+            ];
+
+            // Comparative Variety Breakdown
+            $varietiesBreakdown = (clone $query)->selectRaw('
+                item_variety_id,
+                COUNT(*) as total_records,
+                AVG(buying_price) as avg_buying_price,
+                AVG(selling_price) as avg_selling_price,
+                MIN(buying_price) as min_buying_price,
+                MAX(buying_price) as max_buying_price,
+                MIN(selling_price) as min_selling_price,
+                MAX(selling_price) as max_selling_price,
+                AVG(selling_price - buying_price) as avg_margin
+            ')->groupBy('item_variety_id')
+              ->get()
+              ->map(function ($item) {
+                  $avgBuy = round((float) $item->avg_buying_price, 2);
+                  $avgSell = round((float) $item->avg_selling_price, 2);
+                  $avgMargin = round((float) $item->avg_margin, 2);
+                  $avgMarginPct = $avgBuy > 0 ? round(($avgMargin / $avgBuy) * 100, 2) : 0;
+
+                  return [
+                      'item_variety_id' => $item->item_variety_id,
+                      'item_variety_name' => $item->itemVariety?->name,
+                      'item_variety_code' => $item->itemVariety?->code,
+                      'item_type_name' => $item->itemVariety?->itemType?->name,
+                      'total_records' => (int) $item->total_records,
+                      'avg_buying_price' => $avgBuy,
+                      'avg_selling_price' => $avgSell,
+                      'min_buying_price' => round((float) $item->min_buying_price, 2),
+                      'max_buying_price' => round((float) $item->max_buying_price, 2),
+                      'min_selling_price' => round((float) $item->min_selling_price, 2),
+                      'max_selling_price' => round((float) $item->max_selling_price, 2),
+                      'avg_margin' => $avgMargin,
+                      'avg_margin_percentage' => $avgMarginPct,
+                  ];
+              });
+
+            $isSqlite = DB::connection()->getDriverName() === 'sqlite';
+            $yearSql = $isSqlite ? "strftime('%Y', date)" : "YEAR(date)";
+            $monthSql = $isSqlite ? "strftime('%m', date)" : "MONTH(date)";
+
+            // Format Data According to Grouping
+            if ($groupBy === 'monthly') {
+                $monthlyQuery = (clone $query)->selectRaw("
+                    {$yearSql} as report_year,
+                    {$monthSql} as report_month,
+                    item_variety_id,
+                    COUNT(*) as days_recorded,
+                    AVG(buying_price) as avg_buying_price,
+                    AVG(selling_price) as avg_selling_price,
+                    MIN(buying_price) as min_buying_price,
+                    MAX(buying_price) as max_buying_price,
+                    MIN(selling_price) as min_selling_price,
+                    MAX(selling_price) as max_selling_price,
+                    AVG(selling_price - buying_price) as avg_margin
+                ")->groupByRaw("{$yearSql}, {$monthSql}, item_variety_id")
+                  ->orderByRaw("{$yearSql} desc, {$monthSql} desc");
+
+                $results = $monthlyQuery->get()->map(function ($item) {
+                    $monthFormatted = str_pad($item->report_month, 2, '0', STR_PAD_LEFT);
+                    $avgBuy = round((float) $item->avg_buying_price, 2);
+                    $avgSell = round((float) $item->avg_selling_price, 2);
+                    $avgMargin = round((float) $item->avg_margin, 2);
+                    $avgMarginPct = $avgBuy > 0 ? round(($avgMargin / $avgBuy) * 100, 2) : 0;
+
+                    return [
+                        'period' => "{$item->report_year}-{$monthFormatted}",
+                        'year' => (int) $item->report_year,
+                        'month' => (int) $item->report_month,
+                        'item_variety_id' => $item->item_variety_id,
+                        'item_variety_name' => $item->itemVariety?->name,
+                        'item_variety_code' => $item->itemVariety?->code,
+                        'item_type_name' => $item->itemVariety?->itemType?->name,
+                        'days_recorded' => (int) $item->days_recorded,
+                        'avg_buying_price' => $avgBuy,
+                        'avg_selling_price' => $avgSell,
+                        'min_buying_price' => round((float) $item->min_buying_price, 2),
+                        'max_buying_price' => round((float) $item->max_buying_price, 2),
+                        'min_selling_price' => round((float) $item->min_selling_price, 2),
+                        'max_selling_price' => round((float) $item->max_selling_price, 2),
+                        'avg_margin' => $avgMargin,
+                        'avg_margin_percentage' => $avgMarginPct,
+                    ];
+                });
+            } elseif ($groupBy === 'yearly') {
+                $yearlyQuery = (clone $query)->selectRaw("
+                    {$yearSql} as report_year,
+                    item_variety_id,
+                    COUNT(*) as days_recorded,
+                    AVG(buying_price) as avg_buying_price,
+                    AVG(selling_price) as avg_selling_price,
+                    MIN(buying_price) as min_buying_price,
+                    MAX(buying_price) as max_buying_price,
+                    MIN(selling_price) as min_selling_price,
+                    MAX(selling_price) as max_selling_price,
+                    AVG(selling_price - buying_price) as avg_margin
+                ")->groupByRaw("{$yearSql}, item_variety_id")
+                  ->orderByRaw("{$yearSql} desc");
+
+                $results = $yearlyQuery->get()->map(function ($item) {
+                    $avgBuy = round((float) $item->avg_buying_price, 2);
+                    $avgSell = round((float) $item->avg_selling_price, 2);
+                    $avgMargin = round((float) $item->avg_margin, 2);
+                    $avgMarginPct = $avgBuy > 0 ? round(($avgMargin / $avgBuy) * 100, 2) : 0;
+
+                    return [
+                        'period' => (string) $item->report_year,
+                        'year' => (int) $item->report_year,
+                        'item_variety_id' => $item->item_variety_id,
+                        'item_variety_name' => $item->itemVariety?->name,
+                        'item_variety_code' => $item->itemVariety?->code,
+                        'item_type_name' => $item->itemVariety?->itemType?->name,
+                        'days_recorded' => (int) $item->days_recorded,
+                        'avg_buying_price' => $avgBuy,
+                        'avg_selling_price' => $avgSell,
+                        'min_buying_price' => round((float) $item->min_buying_price, 2),
+                        'max_buying_price' => round((float) $item->max_buying_price, 2),
+                        'min_selling_price' => round((float) $item->min_selling_price, 2),
+                        'max_selling_price' => round((float) $item->max_selling_price, 2),
+                        'avg_margin' => $avgMargin,
+                        'avg_margin_percentage' => $avgMarginPct,
+                    ];
+                });
+            } else {
+                // Default: Daily breakdown
+                $shouldPaginate = $request->boolean('paginate', true);
+                $perPage = $validated['per_page'] ?? 25;
+
+                $dailyQuery = $query->orderBy('date', 'desc')->orderBy('id', 'desc');
+
+                if ($shouldPaginate) {
+                    $paginated = $dailyQuery->paginate($perPage);
+                    $paginated->getCollection()->transform(function ($item) {
+                        $buy = (float) $item->buying_price;
+                        $sell = (float) $item->selling_price;
+                        $margin = round($sell - $buy, 2);
+                        $marginPct = $buy > 0 ? round(($margin / $buy) * 100, 2) : 0;
+
+                        return [
+                            'id' => $item->id,
+                            'date' => $item->date,
+                            'item_variety_id' => $item->item_variety_id,
+                            'item_variety_name' => $item->itemVariety?->name,
+                            'item_variety_code' => $item->itemVariety?->code,
+                            'item_type_name' => $item->itemVariety?->itemType?->name,
+                            'buying_price' => $buy,
+                            'selling_price' => $sell,
+                            'margin' => $margin,
+                            'margin_percentage' => $marginPct,
+                        ];
+                    });
+                    $results = $paginated;
+                } else {
+                    $results = $dailyQuery->get()->map(function ($item) {
+                        $buy = (float) $item->buying_price;
+                        $sell = (float) $item->selling_price;
+                        $margin = round($sell - $buy, 2);
+                        $marginPct = $buy > 0 ? round(($margin / $buy) * 100, 2) : 0;
+
+                        return [
+                            'id' => $item->id,
+                            'date' => $item->date,
+                            'item_variety_id' => $item->item_variety_id,
+                            'item_variety_name' => $item->itemVariety?->name,
+                            'item_variety_code' => $item->itemVariety?->code,
+                            'item_type_name' => $item->itemVariety?->itemType?->name,
+                            'buying_price' => $buy,
+                            'selling_price' => $sell,
+                            'margin' => $margin,
+                            'margin_percentage' => $marginPct,
+                        ];
+                    });
+                }
+            }
+
+            $this->logActivity('REPORT', 'DailyPrice', 'Generated daily price report', $validated);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Daily price report generated successfully',
+                'group_by' => $groupBy,
+                'summary' => $summary,
+                'varieties_breakdown' => $varietiesBreakdown,
+                'data' => $results,
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to generate daily price report',
                 'error' => config('app.debug') ? $th->getMessage() : 'Internal server error',
             ], 500);
         }
