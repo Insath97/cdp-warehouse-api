@@ -241,6 +241,7 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
     // Reports
     Route::prefix('reports')->group(function () {
         Route::get('batch-wise', [ReportController::class, 'batchWise']);
+        Route::get('item-variety-wise', [ReportController::class, 'itemVarietyWise']);
         Route::get('balance', [ReportController::class, 'balance']);
         Route::get('valuation', [ReportController::class, 'valuation']);
         Route::get('aging', [ReportController::class, 'aging']);

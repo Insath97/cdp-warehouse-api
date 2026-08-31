@@ -255,16 +255,26 @@ class PermissionsSeeder extends Seeder
             /* Daily Price Report Management */
             ['name' => 'DailyPriceReport Index', 'group_name' => 'Daily Price Report Management Permissions'],
 
+            /* Item Variety Report Management */
+            ['name' => 'ItemVarietyReport Index', 'group_name' => 'Item Variety Report Management Permissions'],
+
             /* Notification Management */
             ['name' => 'Notification Index', 'group_name' => 'Notification Management Permissions'],
         ];
 
+        // Reset cached roles and permissions
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
         foreach ($permissions as $permission) {
-            Permission::firstOrCreate([
-                'name' => $permission['name'],
-                'group_name' => $permission['group_name'],
-                'guard_name' => 'api',
-            ]);
+            Permission::firstOrCreate(
+                [
+                    'name' => $permission['name'],
+                    'guard_name' => 'api',
+                ],
+                [
+                    'group_name' => $permission['group_name'],
+                ]
+            );
         }
 
         $roles = [
