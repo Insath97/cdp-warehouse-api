@@ -4,6 +4,7 @@ namespace App\Http\Controllers\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GetDashboardRequest;
+use App\Http\Requests\GetPriceTrendsRequest;
 use App\Models\StockBag;
 use App\Models\StockInBatch;
 use App\Models\StockDispatch;
@@ -16,6 +17,8 @@ use App\Models\Buyer;
 use App\Models\Warehouse;
 use App\Models\Branch;
 use App\Models\ItemType;
+use App\Models\ItemVariety;
+use App\Models\DailyPrice;
 use App\Models\ActivityLog;
 use App\Traits\ActivityLogTrait;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -32,7 +35,8 @@ class DashboardController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:Dashboard Index', ['only' => ['summary', 'analytics', 'operational']]),
+            (new Middleware('permission:Dashboard Index'))->only(['summary', 'analytics', 'operational']),
+            (new Middleware('permission:Dashboard Index|Dashboard PriceTrends'))->only(['priceTrends']),
         ];
     }
 
@@ -446,4 +450,277 @@ class DashboardController extends Controller implements HasMiddleware
             $query->where('item_variety_id', $validated['item_variety_id']);
         }
     }
+
+    /**
+     * Daily Price Trends for Executive Dashboard Widget.
+     * Provides live commodity quote, percentage changes, time-series chart points (7 Days, Monthly, Annual),
+     * and list of active varieties for the frontend filter selector.
+     */
+    public function priceTrends(GetPriceTrendsRequest $request)
+    {
+        try {
+            $validated = $request->validated();
+            $range = $validated['range'] ?? '7_days';
+            $priceType = $validated['price_type'] ?? 'both';
+
+            // 1. Resolve Item Variety
+            $varietyId = !empty($validated['item_variety_id']) ? (int) $validated['item_variety_id'] : null;
+
+            if ($varietyId) {
+                $variety = ItemVariety::with('itemType')->find($varietyId);
+                if (!$variety) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Requested item variety not found',
+                    ], 404);
+                }
+            } else {
+                // Auto-pick the variety with the most recent daily price, or first active variety
+                $latestPrice = DailyPrice::orderBy('date', 'desc')->orderBy('id', 'desc')->first();
+                if ($latestPrice) {
+                    $variety = ItemVariety::with('itemType')->find($latestPrice->item_variety_id);
+                } else {
+                    $variety = ItemVariety::with('itemType')->where('is_active', true)->first();
+                }
+            }
+
+            // If no varieties in system
+            if (!$variety) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'No item varieties available',
+                    'data' => [
+                        'selected_variety' => null,
+                        'live_quote' => null,
+                        'range_summary' => null,
+                        'trend_points' => [],
+                        'available_varieties' => [],
+                    ],
+                ], 200);
+            }
+
+            // 2. Resolve Reference Date / Anchor
+            $specifiedDate = !empty($validated['date']) ? Carbon::parse($validated['date']) : null;
+            $today = Carbon::today();
+
+            // Find the latest recorded price date for this variety up to specified date (or today)
+            $latestRecordedQuery = DailyPrice::where('item_variety_id', $variety->id);
+            if ($specifiedDate) {
+                $latestRecordedQuery->whereDate('date', '<=', $specifiedDate->toDateString());
+            }
+            $latestPriceRecord = $latestRecordedQuery->orderBy('date', 'desc')->first();
+
+            // Anchor date: if user provided a specific date, use it; otherwise use today, or latest recorded date if today has no data
+            if ($specifiedDate) {
+                $anchorDate = $specifiedDate;
+            } elseif ($latestPriceRecord && $latestPriceRecord->date > $today->toDateString()) {
+                $anchorDate = Carbon::parse($latestPriceRecord->date);
+            } elseif (DailyPrice::where('item_variety_id', $variety->id)->whereDate('date', $today->toDateString())->exists()) {
+                $anchorDate = $today;
+            } elseif ($latestPriceRecord) {
+                $anchorDate = Carbon::parse($latestPriceRecord->date);
+            } else {
+                $anchorDate = $today;
+            }
+
+            // 3. Resolve Start and End Dates based on range
+            $isAnnual = in_array($range, ['annual', 'yearly']);
+            if (in_array($range, ['7_days', '7days'])) {
+                $rangeKey = '7_days';
+                $endDate = $anchorDate->copy();
+                $startDate = $endDate->copy()->subDays(6);
+            } elseif (in_array($range, ['monthly', 'month'])) {
+                $rangeKey = 'monthly';
+                $endDate = $anchorDate->copy();
+                $startDate = $endDate->copy()->subDays(29);
+            } elseif ($isAnnual) {
+                $rangeKey = 'annual';
+                $endDate = $anchorDate->copy()->endOfMonth();
+                $startDate = $anchorDate->copy()->startOfMonth()->subMonthsNoOverflow(11);
+            } elseif ($range === 'custom' && !empty($validated['from_date'])) {
+                $rangeKey = 'custom';
+                $startDate = Carbon::parse($validated['from_date']);
+                $endDate = !empty($validated['to_date']) ? Carbon::parse($validated['to_date']) : $anchorDate->copy();
+            } else {
+                $rangeKey = '7_days';
+                $endDate = $anchorDate->copy();
+                $startDate = $endDate->copy()->subDays(6);
+            }
+
+            // 4. Retrieve Daily Prices within the window
+            $prices = DailyPrice::where('item_variety_id', $variety->id)
+                ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
+                ->orderBy('date', 'asc')
+                ->get();
+
+            $pricesByDate = $prices->keyBy(fn($p) => Carbon::parse($p->date)->toDateString());
+
+            // 5. Baseline price before period for change calculation
+            $pricePriorToPeriod = DailyPrice::where('item_variety_id', $variety->id)
+                ->whereDate('date', '<', $startDate->toDateString())
+                ->orderBy('date', 'desc')
+                ->first();
+
+            // 6. Build Trend Points
+            $trendPoints = [];
+            if ($isAnnual) {
+                // Annual: Month-by-month summary (exact 12 months)
+                $lastSelling = (float) ($pricePriorToPeriod?->selling_price ?? ($prices->first()?->selling_price ?? 0));
+                $lastBuying = (float) ($pricePriorToPeriod?->buying_price ?? ($prices->first()?->buying_price ?? 0));
+
+                for ($m = 0; $m < 12; $m++) {
+                    $monthCursor = $startDate->copy()->addMonthsNoOverflow($m);
+                    $monthYearStr = $monthCursor->format('Y-m');
+                    $monthPrices = $prices->filter(function ($p) use ($monthYearStr) {
+                        return Carbon::parse($p->date)->format('Y-m') === $monthYearStr;
+                    });
+
+                    if ($monthPrices->isNotEmpty()) {
+                        $avgSell = round((float) $monthPrices->avg('selling_price'), 2);
+                        $avgBuy = round((float) $monthPrices->avg('buying_price'), 2);
+                        $lastSelling = $avgSell;
+                        $lastBuying = $avgBuy;
+                        $hasData = true;
+                    } else {
+                        $avgSell = $lastSelling;
+                        $avgBuy = $lastBuying;
+                        $hasData = false;
+                    }
+
+                    $trendPoints[] = [
+                        'period' => $monthYearStr,
+                        'label' => $monthCursor->format('M Y'),
+                        'selling_price' => $avgSell,
+                        'buying_price' => $avgBuy,
+                        'margin' => round($avgSell - $avgBuy, 2),
+                        'is_recorded' => $hasData,
+                    ];
+                }
+            } else {
+                // Daily points (7_days, monthly, custom)
+                $curr = $startDate->copy();
+                $lastSelling = (float) ($pricePriorToPeriod?->selling_price ?? ($prices->first()?->selling_price ?? 0));
+                $lastBuying = (float) ($pricePriorToPeriod?->buying_price ?? ($prices->first()?->buying_price ?? 0));
+
+                while ($curr->lte($endDate)) {
+                    $dateStr = $curr->toDateString();
+                    if (isset($pricesByDate[$dateStr])) {
+                        $lastSelling = (float) $pricesByDate[$dateStr]->selling_price;
+                        $lastBuying = (float) $pricesByDate[$dateStr]->buying_price;
+                        $hasData = true;
+                    } else {
+                        $hasData = false;
+                    }
+
+                    $trendPoints[] = [
+                        'date' => $dateStr,
+                        'label' => $curr->format('d M'), // e.g. "25 Aug"
+                        'day_name' => $curr->format('D'), // e.g. "Tue"
+                        'selling_price' => $lastSelling,
+                        'buying_price' => $lastBuying,
+                        'margin' => round($lastSelling - $lastBuying, 2),
+                        'is_recorded' => $hasData,
+                    ];
+
+                    $curr->addDay();
+                }
+            }
+
+            // 7. Calculate Live Quote & Metrics
+            $latestPriceInScope = $prices->last() ?? $latestPriceRecord;
+            $currentSelling = (float) ($latestPriceInScope?->selling_price ?? 0);
+            $currentBuying = (float) ($latestPriceInScope?->buying_price ?? 0);
+            $currentMargin = round($currentSelling - $currentBuying, 2);
+            $currentMarginPct = $currentBuying > 0 ? round(($currentMargin / $currentBuying) * 100, 2) : 0.0;
+
+            // Baseline for change: initial point in trend or prior price
+            $baselinePoint = $prices->first() ?? $pricePriorToPeriod;
+            $baselineSelling = (float) ($baselinePoint?->selling_price ?? $currentSelling);
+            $changeAmount = round($currentSelling - $baselineSelling, 2);
+            $changePercentage = $baselineSelling > 0 ? round(($changeAmount / $baselineSelling) * 100, 2) : 0.0;
+
+            if ($changeAmount > 0) {
+                $direction = 'up';
+            } elseif ($changeAmount < 0) {
+                $direction = 'down';
+            } else {
+                $direction = 'flat';
+            }
+
+            // Range Summary
+            $sellingPricesList = collect($trendPoints)->pluck('selling_price')->filter(fn($v) => $v > 0);
+            $buyingPricesList = collect($trendPoints)->pluck('buying_price')->filter(fn($v) => $v > 0);
+
+            $rangeSummary = [
+                'range' => $rangeKey,
+                'from_date' => $startDate->toDateString(),
+                'to_date' => $endDate->toDateString(),
+                'total_points' => count($trendPoints),
+                'min_selling_price' => $sellingPricesList->isNotEmpty() ? $sellingPricesList->min() : 0,
+                'max_selling_price' => $sellingPricesList->isNotEmpty() ? $sellingPricesList->max() : 0,
+                'avg_selling_price' => $sellingPricesList->isNotEmpty() ? round($sellingPricesList->avg(), 2) : 0,
+                'min_buying_price' => $buyingPricesList->isNotEmpty() ? $buyingPricesList->min() : 0,
+                'max_buying_price' => $buyingPricesList->isNotEmpty() ? $buyingPricesList->max() : 0,
+                'avg_buying_price' => $buyingPricesList->isNotEmpty() ? round($buyingPricesList->avg(), 2) : 0,
+            ];
+
+            // 8. Available Varieties for Dropdown
+            $availableVarieties = ItemVariety::where('is_active', true)
+                ->select('id', 'name', 'code', 'item_type_id')
+                ->with('itemType:id,name,code')
+                ->orderBy('name', 'asc')
+                ->get()
+                ->map(fn($v) => [
+                    'id' => $v->id,
+                    'name' => $v->name,
+                    'code' => $v->code,
+                    'item_type_name' => $v->itemType?->name,
+                ]);
+
+            $isLive = $latestPriceInScope && Carbon::parse($latestPriceInScope->date)->isToday();
+
+            $this->logActivity('PRICE_TRENDS', 'Dashboard', "Viewed daily price trends for variety {$variety->name}");
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Daily price trends retrieved successfully',
+                'data' => [
+                    'selected_variety' => [
+                        'id' => $variety->id,
+                        'name' => $variety->name,
+                        'code' => $variety->code,
+                        'item_type' => $variety->itemType ? [
+                            'id' => $variety->itemType->id,
+                            'name' => $variety->itemType->name,
+                            'code' => $variety->itemType->code,
+                        ] : null,
+                    ],
+                    'live_quote' => [
+                        'date' => $latestPriceInScope ? Carbon::parse($latestPriceInScope->date)->toDateString() : $anchorDate->toDateString(),
+                        'is_live' => $isLive,
+                        'currency' => 'LKR',
+                        'unit' => 'kg',
+                        'selling_price' => $currentSelling,
+                        'buying_price' => $currentBuying,
+                        'margin' => $currentMargin,
+                        'margin_percentage' => $currentMarginPct,
+                        'change_amount' => $changeAmount,
+                        'change_percentage' => $changePercentage,
+                        'direction' => $direction,
+                    ],
+                    'range_summary' => $rangeSummary,
+                    'trend_points' => $trendPoints,
+                    'available_varieties' => $availableVarieties,
+                ],
+            ], 200);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retrieve daily price trends',
+                'error' => config('app.debug') ? $th->getMessage() : 'Internal server error',
+            ], 500);
+        }
+    }
 }
+

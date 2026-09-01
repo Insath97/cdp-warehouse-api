@@ -222,6 +222,7 @@ class PermissionsSeeder extends Seeder
 
             /* Executive Dashboard Management */
             ['name' => 'Dashboard Index', 'group_name' => 'Executive Dashboard Permissions'],
+            ['name' => 'Dashboard PriceTrends', 'group_name' => 'Executive Dashboard Permissions'],
 
             /* Bulk Import Management */
             ['name' => 'Import Index', 'group_name' => 'Bulk Import Management Permissions'],

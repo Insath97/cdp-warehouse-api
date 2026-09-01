@@ -61,6 +61,14 @@ class ItemVariety extends Model
     }
 
     /**
+     * Relationship with DailyPrices.
+     */
+    public function dailyPrices(): HasMany
+    {
+        return $this->hasMany(DailyPrice::class, 'item_variety_id');
+    }
+
+    /**
      * Scope a query to only include active varieties.
      */
     public function scopeActive(Builder $query): Builder

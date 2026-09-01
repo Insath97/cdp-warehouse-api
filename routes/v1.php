@@ -260,6 +260,8 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
         Route::get('summary', [DashboardController::class, 'summary']);
         Route::get('analytics', [DashboardController::class, 'analytics']);
         Route::get('operational', [DashboardController::class, 'operational']);
+        Route::get('price-trends', [DashboardController::class, 'priceTrends']);
+        Route::get('daily-price-trends', [DashboardController::class, 'priceTrends']);
     });
 
     // Bulk Import Engine & Template Generator
