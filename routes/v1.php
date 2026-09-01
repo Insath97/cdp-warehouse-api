@@ -35,6 +35,7 @@ use App\Http\Controllers\V1\SettingController;
 use App\Http\Controllers\V1\ReportController;
 use App\Http\Controllers\V1\PurchaseOrderController;
 use App\Http\Controllers\V1\NotificationController;
+use App\Http\Controllers\V1\DailyPriceController;
 use Illuminate\Support\Facades\Route;
 
 /* public routes */
@@ -126,6 +127,12 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
         Route::patch('{id}/toggle-status', [ItemVarietyController::class, 'toggleStatus']);
     });
     Route::apiResource('item-varieties', ItemVarietyController::class);
+
+    // Daily Prices
+    Route::prefix('daily-prices')->group(function () {
+        Route::get('today', [DailyPriceController::class, 'getTodayPrice']);
+    });
+    Route::apiResource('daily-prices', DailyPriceController::class);
 
     // Banks
     Route::prefix('banks')->group(function () {
@@ -234,10 +241,12 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
     // Reports
     Route::prefix('reports')->group(function () {
         Route::get('batch-wise', [ReportController::class, 'batchWise']);
+        Route::get('item-variety-wise', [ReportController::class, 'itemVarietyWise']);
         Route::get('balance', [ReportController::class, 'balance']);
         Route::get('valuation', [ReportController::class, 'valuation']);
         Route::get('aging', [ReportController::class, 'aging']);
         Route::get('alerts', [ReportController::class, 'alerts']);
+        Route::get('daily-prices', [ReportController::class, 'dailyPrices']);
     });
 
     // Activity Logs (Read-only: Get All and Get By ID)
@@ -251,6 +260,8 @@ Route::middleware(['auth:api'])->prefix('v1')->group(function () {
         Route::get('summary', [DashboardController::class, 'summary']);
         Route::get('analytics', [DashboardController::class, 'analytics']);
         Route::get('operational', [DashboardController::class, 'operational']);
+        Route::get('price-trends', [DashboardController::class, 'priceTrends']);
+        Route::get('daily-price-trends', [DashboardController::class, 'priceTrends']);
     });
 
     // Bulk Import Engine & Template Generator

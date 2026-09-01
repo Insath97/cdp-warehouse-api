@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class ItemVariety extends Model
@@ -49,6 +50,22 @@ class ItemVariety extends Model
     public function itemType(): BelongsTo
     {
         return $this->belongsTo(ItemType::class);
+    }
+
+    /**
+     * Relationship with StockBags.
+     */
+    public function stockBags(): HasMany
+    {
+        return $this->hasMany(StockBag::class, 'item_variety_id');
+    }
+
+    /**
+     * Relationship with DailyPrices.
+     */
+    public function dailyPrices(): HasMany
+    {
+        return $this->hasMany(DailyPrice::class, 'item_variety_id');
     }
 
     /**

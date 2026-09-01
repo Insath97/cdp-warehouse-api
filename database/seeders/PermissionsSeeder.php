@@ -222,6 +222,7 @@ class PermissionsSeeder extends Seeder
 
             /* Executive Dashboard Management */
             ['name' => 'Dashboard Index', 'group_name' => 'Executive Dashboard Permissions'],
+            ['name' => 'Dashboard PriceTrends', 'group_name' => 'Executive Dashboard Permissions'],
 
             /* Bulk Import Management */
             ['name' => 'Import Index', 'group_name' => 'Bulk Import Management Permissions'],
@@ -245,16 +246,36 @@ class PermissionsSeeder extends Seeder
             ['name' => 'PurchaseOrder Approve', 'group_name' => 'Purchase Order Management Permissions'],
             ['name' => 'PurchaseOrder Verify', 'group_name' => 'Purchase Order Management Permissions'],
 
+            /* Daily Price Management */
+            ['name' => 'DailyPrice Index', 'group_name' => 'Daily Price Management Permissions'],
+            ['name' => 'DailyPrice List', 'group_name' => 'Daily Price Management Permissions'],
+            ['name' => 'DailyPrice Create', 'group_name' => 'Daily Price Management Permissions'],
+            ['name' => 'DailyPrice Update', 'group_name' => 'Daily Price Management Permissions'],
+            ['name' => 'DailyPrice Delete', 'group_name' => 'Daily Price Management Permissions'],
+
+            /* Daily Price Report Management */
+            ['name' => 'DailyPriceReport Index', 'group_name' => 'Daily Price Report Management Permissions'],
+
+            /* Item Variety Report Management */
+            ['name' => 'ItemVarietyReport Index', 'group_name' => 'Item Variety Report Management Permissions'],
+
             /* Notification Management */
             ['name' => 'Notification Index', 'group_name' => 'Notification Management Permissions'],
         ];
 
+        // Reset cached roles and permissions
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
         foreach ($permissions as $permission) {
-            Permission::firstOrCreate([
-                'name' => $permission['name'],
-                'group_name' => $permission['group_name'],
-                'guard_name' => 'api',
-            ]);
+            Permission::firstOrCreate(
+                [
+                    'name' => $permission['name'],
+                    'guard_name' => 'api',
+                ],
+                [
+                    'group_name' => $permission['group_name'],
+                ]
+            );
         }
 
         $roles = [
